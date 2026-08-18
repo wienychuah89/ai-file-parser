@@ -27,6 +27,21 @@ if not st.session_state["authenticated"]:
 # ====================================================
 
 
+if not st.session_state.authenticated:
+    st.title("系统登录")
+    
+    # 使用 st.form 将输入框和按钮打包
+    with st.form(key="login_form"):
+        st.text_input(
+            "请输入访问密码", 
+            type="password", 
+            key="password_input"
+        )
+        # Form 表单必须配有 submit_button
+        submit_button = st.form_submit_button(label="登录", on_click=check_password)
+        
+    st.stop()  # 未登录时阻止后续代码执行
+
 # ================= 🔑 第二步：智能双秘钥自动交替验证 =================
 clients = []
 if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"].strip():
