@@ -103,10 +103,7 @@ if ai_contents:
     if st.button("🚀 开始 AI 深度分析", type="primary"):
         with st.spinner("AI 正在深度分析中，请稍候..."):
             try:
-                # 组合通过标准校验的媒体 Part 列表和用户的提示词字符串
                 final_inputs = [*ai_contents, user_prompt]
-                
-                # 调用最新版 gemini-3.6-flash 进行识别
                 response = client.models.generate_content(
                     model='gemini-3.6-flash',
                     contents=final_inputs
@@ -114,9 +111,12 @@ if ai_contents:
                 st.session_state["analysis_result"] = response.text
                 
             except Exception as e:
-                # 针对 503 谷歌服务器塞车或瞬时繁忙做友好提示
-                if "503" in str(e) or "UNAVAILABLE" in str(e):
-                    st.error("⚠️ 谷歌 AI 服务器刚才打了个盹（临时繁忙），请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
+                # ✨ 核心黑科技：如果这次分析遇到了 429 频率超限报错，后台自动把钥匙指针切到下一把！
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                    st.session_state["key_index"] += 1  # 切换到下一把备用钥匙
+                    st.error("⚠️ 刚才那把钥匙按得太急被谷歌限流了，App 后台已自动为您切换到【第二把备用钥匙】！请您立刻再次点击【🚀 开始 AI 深度分析】按钮即可瞬间通过！")
+                elif "503" in str(e) or "UNAVAILABLE" in str(e):
+                    st.error("⚠️ 谷歌 AI 服务器刚才临时繁忙，请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
                 else:
                     st.error(f"分析失败: {str(e)}")
 
