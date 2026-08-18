@@ -239,47 +239,73 @@ if ai_contents:
                         st.error(f"分析failed: {str(e)}")
                         break
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 终极分享 =================
+import streamlit as st
+from st_copy_to_clipboard import st_copy_to_clipboard
+
+# ================= 🟢 第四步：一键复制与 WhatsApp 智能分享 =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 终极穿透控制台：完全抛弃会被手机沙盒死锁静音的任何网页 HTML/JS 代码！
-    # 直接拉起官方拥有最高驱动特权的标准多媒体音频轨，100% 击穿拦截，绝对出声！
+    # 播放音频
     if "audio_bytes" in st.session_state:
-        st.write("🎵 点击下方【▶️ 播放】键，直接收听由微软智能引擎为您录制的「中英双语高保真声音报告」：")
+        st.write("🎵 点击下方【▶️ 播放】键，直接收听智能引擎录制的「声音报告」：")
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
         st.write("")
     
-    # 显示漂亮的原生分析结果文字/表格
+    # 显示分析文本
     st.markdown(st.session_state["analysis_result"])
     
     st.divider()
     st.subheader("📲 结果快捷分享通道")
     
+    # 1. 选择分享模式
+    share_type = st.radio(
+        "📌 请选择您希望分享到 WhatsApp 的内容类型：",
+        options=["📝 发送文字报告", "🎵 发送语音报告 (MP3)"],
+        horizontal=True
+    )
+    
+    # 2. 号码输入与锁定
     with st.form("whatsapp_form", clear_on_submit=False):
-        st.info("💡 步骤一：请先在下方输入接收人电话，并点击【🔒 锁定号码并生成绿色通道】按钮：")
-        target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):", value="")
-        lock_button = st.form_submit_button("🔒 步骤一：锁定号码并生成绿色通道", use_container_width=True)
+        st.info("💡 步骤一：请先在下方输入接收人电话，并点击锁定：")
+        target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则跳转后手动选人):", value="")
+        lock_button = st.form_submit_button("🔒 步骤一：锁定号码并生成通道", use_container_width=True)
         
         if lock_button:
             clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
             if clean_phone:
                 st.session_state["wa_url"] = f"https://wa.me/{clean_phone}"
-                st.success(f"✅ 号码 {clean_phone} 锁定成功！请继续完成下方步骤二和步骤三👇")
+                st.success(f"✅ 号码 {clean_phone} 锁定成功！请继续完成后续步骤👇")
             else:
                 st.session_state["wa_url"] = "https://wa.me/"
-                st.success("✅ 已锁定为空号模式！请继续完成下方步骤二和步骤三👇")
+                st.success("✅ 已锁定为空号模式！请继续完成后续步骤👇")
 
     st.write("")
-    st.write("📋 步骤二：点击下方按钮，将上方的分析报告真正复制到您的手机剪贴板中：")
-    
-    from st_copy_to_clipboard import st_copy_to_clipboard
-    st_copy_to_clipboard(
-        st.session_state["analysis_result"], 
-        before_copy_label="📋 步骤二：点击此处 ➡️ 真正一键复制 AI 分析结果", 
-        after_copy_label="🎉 真正复制成功！请放心前往下方步骤三粘贴发送！"
-    )
 
+    # 3. 根据所选类型展示对应的操作步骤
+    if share_type == "📝 发送文字报告":
+        st.write("📋 **步骤二**：点击下方按钮，将文本报告复制到手机剪贴板：")
+        st_copy_to_clipboard(
+            st.session_state["analysis_result"], 
+            before_copy_label="📋 点击此处 ➡️ 一键复制 AI 分析文本", 
+            after_copy_label="🎉 复制成功！请点击下方步骤三前往 WhatsApp 粘贴发送！"
+        )
+        
+    elif share_type == "🎵 发送语音报告 (MP3)":
+        if "audio_bytes" in st.session_state:
+            st.write("💾 **步骤二**：点击下方按钮将音频文件保存到手机/电脑：")
+            st.download_button(
+                label="⬇️ 下载语音文件 (voice_report.mp3)",
+                data=st.session_state["audio_bytes"],
+                file_name="voice_report.mp3",
+                mime="audio/mp3",
+                use_container_width=True
+            )
+            st.caption("💡 提示：下载后打开 WhatsApp，点击聊天框旁的 **📎（附件/加号）** ➡️ 选择「音频/文件」即可直接发送。")
+        else:
+            st.warning("⚠️ 当前暂无可用的语音数据，请先生成语音报告。")
+
+    # 4. 跳转 WhatsApp 按钮
     if "wa_url" in st.session_state:
         whatsapp_btn_html = f"""
         <a href="{st.session_state['wa_url']}" target="_blank" style="
@@ -295,6 +321,6 @@ if "analysis_result" in st.session_state:
             border-radius: 8px; 
             margin-top: 25px; 
             box-shadow: 0px 4px 10px rgba(37,211,102,0.3);
-        ">🟢 步骤三：点击前往 WhatsApp 软件（进去后长按粘贴）</a>
+        ">🟢 步骤三：点击前往 WhatsApp 软件发送</a>
         """
         st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
