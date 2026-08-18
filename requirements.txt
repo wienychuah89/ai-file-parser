@@ -3,3 +3,4 @@ pillow
 pypdf
 st-copy-to-clipboard
 gTTS
+edge-tts
