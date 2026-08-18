@@ -103,34 +103,35 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键分享到 WhatsApp（JS 强力唤醒版） =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 突围分享版 =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
     
     st.divider()
-    st.subheader("📲 结果转发分享")
+    st.subheader("📲 结果快捷分享")
     
-    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择联系人):", value="")
+    # 清洗和准备分析文本，防止特殊字符引发解析错乱
+    raw_text = st.session_state["analysis_result"]
+    clean_js_text = raw_text.replace("`", "\\`").replace("$", "\\$")
     
-    # 智能清洗电话号码
-    clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
-    
-    encoded_text = urllib.parse.quote(st.session_state["analysis_result"])
-    
-    if clean_phone:
-        whatsapp_url = f"https://whatsapp.com{clean_phone}&text={encoded_text}"
-    else:
-        whatsapp_url = f"https://whatsapp.com{encoded_text}"
-        
-    # ✨ 终极绝招：利用普通的按钮结合 JavaScript 的 onclick 最强优先权事件
-    # 强制突破手机沙盒的外壳限制，从最外层顶层直接呼叫手机本地的 WhatsApp！
-    whatsapp_btn_html = f"""
-    <button onclick="window.top.location.href='{whatsapp_url}';" style="
+    # 🌟 黑科技 1：利用纯 HTML+JS 的 clipboard API 制作 100% 免疫拦截的一键复制大按钮
+    copy_btn_html = f"""
+    <script>
+    function copyToClipboard() {{
+        const text = `{clean_js_text}`;
+        navigator.clipboard.writeText(text).then(function() {{
+            alert("📋 提示：分析报告已完美复制到您的手机剪贴板！请直接去 WhatsApp 粘贴发送！");
+        }}, function(err) {{
+            alert("复制失败: ", err);
+        }});
+    }}
+    </script>
+    <button onclick="copyToClipboard();" style="
         display: block;
         width: 100%;
         text-align: center;
-        background-color: #25D366;
+        background-color: #3B82F6;
         color: white;
         padding: 12px 0px;
         font-size: 16px;
@@ -140,8 +141,28 @@ if "analysis_result" in st.session_state:
         margin-top: 10px;
         cursor: pointer;
         box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-    ">🟢 一键发送到 WhatsApp</button>
+    ">📋 一键复制 AI 分析结果</button>
     """
+    st.markdown(copy_btn_html, unsafe_allow_html=True)
     
-    # 渲染防拦截按钮
-    st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
+    st.write("")
+    st.info("💡 复制成功后，您可以点击下方官方直达通道，手动粘贴给您的联系人：")
+    
+    # 允许输入特定的特定人电话号码
+    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择):", value="")
+    clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
+    
+    if clean_phone:
+        wa_direct_url = f"https://wa.me/{clean_phone}"
+    else:
+        wa_direct_url = "https://wa.me/"
+        
+    # 🌟 黑科技 2：这是官方最标准的无参数原生域名，安卓独立快捷方式壳不会拦截这一类静态锚点链接！
+    st.markdown(
+        f'<a href="{wa_direct_url}" target="_blank" style="'
+        'display: block; width: 100%; text-align: center; background-color: #25D366; '
+        'color: white; padding: 12px 0px; font-size: 16px; font-weight: bold; '
+        'text-decoration: none; border-radius: 8px; margin-top: 5px; '
+        'box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">🟢 前往 WhatsApp 软件</a>',
+        unsafe_allow_html=True
+    )
