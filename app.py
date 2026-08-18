@@ -10,7 +10,7 @@ import asyncio
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
 
 # ================= 🔒 第一步：智能防刷新密码锁 =================
-PASSWORD = "cwnpea6125"  # 👈 保持你之前的密码不变
+PASSWORD = "112234455"  # 👈 保持你之前的密码不变
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
