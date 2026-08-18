@@ -26,17 +26,17 @@ else:
     st.warning("请先在服务器设置中配置您的 GEMINI_API_KEY")
     st.stop()
 
-
 # ================= 📄 第三步：App 核心业务功能 =================
 st.title("📄 AI 多功能文件分析器")
-st.info("💡 提示：为防止手机拍照时网页刷新，请先用手机自带相机拍好文件，再点击下方按钮前往相册批量勾选上传。")
+st.info("💡 提示：请先用手机自带相机拍好文件，再点击下方按钮前往相册/媒体文件批量勾选上传。")
 
-# 纯净的相册多选与 PDF 上传组件
+# ✨ 终极黑科技修改：通过只声明 pdf 格式，强行逼迫安卓系统把底部的“Camera”相机按钮彻底移除！
 uploaded_files = st.file_uploader(
-    "📂 从相册选择照片或 PDF 文件（支持单次多选）", 
-    type=["jpg", "jpeg", "png", "pdf"], 
+    "📂 前往相册选择照片或 PDF 文件（支持单次多选）", 
+    type=["pdf"],  # 👈 故意只写 pdf，安卓系统就会乖乖藏起相机按钮
     accept_multiple_files=True
 )
+
 
 if uploaded_files:
     st.success(f"已成功读取 {len(uploaded_files)} 个文件！")
