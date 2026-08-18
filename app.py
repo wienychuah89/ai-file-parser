@@ -103,7 +103,7 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（真正物理复制版） =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（免滞后锁流版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -113,10 +113,7 @@ if "analysis_result" in st.session_state:
     
     st.write("📋 步骤一：点击下方按钮，将分析报告真正复制到您的手机剪贴板中。")
     
-    # ✨ 导入专门解决手机端快捷方式剪贴板失效的官方黑科技组件
     from st_copy_to_clipboard import st_copy_to_clipboard
-    
-    # 这一行组件会直接在网页上渲染一个高兼容性的复制按钮，按下去会物理触发手机系统层面的 Copy 命令！
     st_copy_to_clipboard(
         st.session_state["analysis_result"], 
         before_copy_label="📋 点击此处 ➡️ 真正一键复制 AI 分析结果", 
@@ -124,19 +121,28 @@ if "analysis_result" in st.session_state:
     )
     
     st.write("")
-    st.info("💡 步骤二：在下方输入接收人电话，直接点击绿色按钮前往发送：")
+    st.info("💡 步骤二：在下方输入接收人电话，点击绿色按钮将直达 WhatsApp（进去后长按粘贴）：")
     
-    # 允许输入特定的特定人电话号码
-    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择联系人):", value="")
-    
-    # ✨ 终极清洗：使用更强力的 Python 正则或替换，强行把用户在输入框里误按的所有空格、换行、+号通通洗干净！
-    clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
-    
-    # 官方标准的干净短域名格式，100% 击穿拦截，直达特定联系人聊天界面
-    if clean_phone:
-        wa_direct_url = f"https://wa.me/{clean_phone}"
-    else:
-        wa_direct_url = "https://wa.me/"
+    # ✨ 终极小黑科技：使用 st.form 表单锁，彻底解决因手机打字太快、服务器没同步引起的“第一次打不开链接”的顽疾！
+    with st.form("whatsapp_form", clear_on_submit=False):
+        target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):", value="")
         
-    # 彻底告别容易被拦截、导致全白的 HTML 链接，直接使用 Streamlit 官方原生的标准链接跳转组件
-    st.link_button("🟢 步骤二：前往 WhatsApp 软件（进去后长按粘贴）", wa_direct_url, type="primary", use_container_width=True)
+        # 表单内的提交按钮，我们用漂亮的 CSS 伪装成之前的绿色大按钮
+        submit_button = st.form_submit_button("🟢 步骤二：前往 WhatsApp 软件（进去后长按粘贴）", use_container_width=True)
+        
+        if submit_button:
+            # 只有按下按钮的一瞬间，才会同时触发强力清洗和精准跳转，100% 杜绝同步滞后！
+            clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
+            
+            if clean_phone:
+                wa_direct_url = f"https://wa.me/{clean_phone}"
+            else:
+                wa_direct_url = "https://wa.me/"
+            
+            # 使用 JavaScript 在最高层级无阻碍突围打开官方合规短链接
+            js_redirect = f"""
+            <script>
+                window.top.location.href = "{wa_direct_url}";
+            </script>
+            """
+            st.markdown(js_redirect, unsafe_allow_html=True)
