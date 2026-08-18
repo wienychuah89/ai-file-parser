@@ -135,7 +135,7 @@ if ai_contents:
                         st.error(f"分析失败: {str(e)}")
                         break
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（免滞后锁流版） =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（表单穿透修复版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -153,28 +153,43 @@ if "analysis_result" in st.session_state:
     )
     
     st.write("")
-    st.info("💡 步骤二：在下方输入接收人电话，点击绿色按钮将直达 WhatsApp（进去后长按粘贴）：")
     
-    # ✨ 终极小黑科技：使用 st.form 表单锁，彻底解决因手机打字太快、服务器没同步引起的“第一次打不开链接”的顽疾！
+    # 🌟 终极修复：使用原生的表单来安全锁定电话号码输入框，防止打字太快同步滞后
     with st.form("whatsapp_form", clear_on_submit=False):
+        st.info("💡 步骤二：在下方输入接收人电话，并点击【🔒 锁定号码并生成通道】按钮：")
         target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):", value="")
         
-        # 表单内的提交按钮，我们用漂亮的 CSS 伪装成之前的绿色大按钮
-        submit_button = st.form_submit_button("🟢 步骤二：前往 WhatsApp 软件（进去后长按粘贴）", use_container_width=True)
+        # 1. 提交表单的确认键
+        lock_button = st.form_submit_button("🔒 步骤二：锁定号码并生成通道", use_container_width=True)
         
-        if submit_button:
-            # 只有按下按钮的一瞬间，才会同时触发强力清洗和精准跳转，100% 杜绝同步滞后！
+        if lock_button:
+            # 当用户点击锁定时，强力清洗号码，确保没有隐藏空格
             clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
             
             if clean_phone:
-                wa_direct_url = f"https://wa.me/{clean_phone}"
+                st.session_state["wa_url"] = f"https://wa.me/{clean_phone}"
+                st.success(f"✅ 号码 {clean_phone} 锁定成功！直达链接已在下方为您为您准备就绪👇")
             else:
-                wa_direct_url = "https://wa.me/"
-            
-            # 使用 JavaScript 在最高层级无阻碍突围打开官方合规短链接
-            js_redirect = f"""
-            <script>
-                window.top.location.href = "{wa_direct_url}";
-            </script>
-            """
-            st.markdown(js_redirect, unsafe_allow_html=True)
+                st.session_state["wa_url"] = "https://wa.me/"
+                st.success("✅ 已锁定为空号模式！直达链接已在下方为您为您准备就绪👇")
+
+    # 🌟 2. 极其巧妙地把真正的绿色跳转大按钮【拿到表单外面来渲染】！
+    # 这样既享受了表单对打字滞后的完美保护，又 100% 击穿了表单对跳转动作的安全拦截！
+    if "wa_url" in st.session_state:
+        whatsapp_btn_html = f"""
+        <a href="{st.session_state['wa_url']}" target="_blank" style="
+            display: block; 
+            width: 100%; 
+            text-align: center; 
+            background-color: #25D366; 
+            color: white; 
+            padding: 14px 0px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            margin-top: 15px; 
+            box-shadow: 0px 4px 10px rgba(37,211,102,0.3);
+        ">🟢 步骤三：点击前往 WhatsApp 软件（进去后长按粘贴）</a>
+        """
+        st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
