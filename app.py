@@ -165,26 +165,17 @@ if "analysis_result" in st.session_state:
     # ✨ 核心安全升级：清洗文本，去除冲突字符
     clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "\\'").replace('"', '\\"')
     
-    # 纯静态 HTML 模版，隔离大括号，100% 杜绝页面卡死
+    # ✨ 语音控制台终极修复版：洗净全部换行，确保两个按钮完美并排平铺，100% 不吐乱码
     tts_template_html = """
     <div style="background-color: #F0F2F6; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
-        <button onclick="
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER');
-            msg.lang = 'zh-CN';
-            msg.rate = 1.0;
-            window.speechSynthesis.speak(msg);
-        " style="
-            flex: 2; background-color: #3B82F6; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;
-        ">🔊 点击播放语音报告</button>
-        
-        <button onclick="
-            window.speechSynthesis.cancel();
-        " style="
-            flex: 1; background-color: #EF4444; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;
-        ">🔇 停止</button>
+        <button onclick="window.speechSynthesis.cancel(); const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER'); msg.lang = 'zh-CN'; msg.rate = 1.0; window.speechSynthesis.speak(msg);" style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;">🔊 点击播放语音报告</button>
+        <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;">🔇 停止</button>
     </div>
     """
+
+     
+
+    
     final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", clean_audio_text)
     st.markdown(final_tts_html, unsafe_allow_html=True)
     
