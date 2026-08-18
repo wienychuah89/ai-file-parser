@@ -220,8 +220,12 @@ if ai_contents:
                     except Exception:
                         pass # 避免 TTS 异常阻断文本展示
                     
+                    # ⚡ 自动清空剪贴板标记：生成新内容时清空旧剪贴板，防止用户直接粘贴旧数据
+                    st.session_state["clear_clipboard_trigger"] = True
+                    
                     success = True
                     st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
+                    st.rerun()
                     break
                     
                 except Exception as e:
@@ -238,10 +242,25 @@ if ai_contents:
                         break
 
 # ================= 🟢 第四步：一键复制与 WhatsApp 分享 =================
-if "analysis_result" in st.session_state:
+if "analysis_result" in st.session_state and st.session_state["analysis_result"]:
+    # ⚡ 自动清空手机系统剪贴板执行脚本（仅在每次生成新分析后触发一次）
+    if st.session_state.get("clear_clipboard_trigger", False):
+        st.markdown(
+            """
+            <script>
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText("");
+            }
+            </script>
+            """,
+            unsafe_allow_html=True
+        )
+        st.session_state["clear_clipboard_trigger"] = False
+
+    st.divider()
     st.subheader("📊 AI 分析结果")
     
-    if "audio_bytes" in st.session_state:
+    if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
         st.write("🎵 **语音朗读报告**：")
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
         st.write("")
@@ -251,10 +270,12 @@ if "analysis_result" in st.session_state:
     st.divider()
     st.subheader("📲 结果快捷分享通道")
     
+    # ⚡ 绑定独立 key，防止选项切换时页面重跑导致数据丢失闪退
     share_type = st.radio(
         "📌 请选择您希望分享到 WhatsApp 的内容类型：",
         options=["📝 发送文字报告", "🎵 发送语音报告 (MP3)"],
-        horizontal=True
+        horizontal=True,
+        key="share_type_radio"
     )
     
     with st.form("whatsapp_form", clear_on_submit=False):
@@ -282,7 +303,7 @@ if "analysis_result" in st.session_state:
         )
         
     elif share_type == "🎵 发送语音报告 (MP3)":
-        if "audio_bytes" in st.session_state:
+        if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
             st.write("💾 **步骤二**：点击下方下载语音文件：")
             st.download_button(
                 label="⬇️ 下载语音文件 (voice_report.mp3)",
@@ -295,7 +316,7 @@ if "analysis_result" in st.session_state:
         else:
             st.warning("⚠️ 当前暂无语音数据。")
 
-    if "wa_url" in st.session_state:
+    if "wa_url" in st.session_state and st.session_state["wa_url"]:
         whatsapp_btn_html = f"""
         <a href="{st.session_state['wa_url']}" target="_blank" style="
             display: block; 
