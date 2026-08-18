@@ -7,39 +7,38 @@ import urllib.parse
 import os
 import asyncio
 # ==========================================
-# 🌟 PREMIUM UI TRICK: 隐藏 GitHub 元素 + 消除顶部留白
+# 🌟 PREMIUM UI TRICK: 100% 完美抹平顶部 & 完全隐藏 GitHub 元素
 # ==========================================
 st.markdown(
     """
     <style>
-    /* 1. 强力隐藏所有 GitHub 元素 */
+    /* 1. 强力隐藏所有顶部控制栏、Fork 按钮、部署按钮及猫咪图标 */
+    [data-testid="stHeader"], 
+    [data-testid="stAppDeployButton"], 
+    header, 
+    .stAppHeader,
     a[href*="github.com"] {
         display: none !important;
-    }
-    [data-testid="stAppDeployButton"], 
-    [data-testid="stHeader"] iframe,
-    header a {
-        display: none !important;
-    }
-    
-    /* 2. 彻底干掉顶部 Header 的高度 */
-    [data-testid="stHeader"] {
+        visibility: hidden !important;
         height: 0px !important;
         min-height: 0px !important;
         padding: 0px !important;
         margin: 0px !important;
-        background-color: transparent !important;
-    }
-
-    /* 3. 压缩主内容区域（Main Content）的顶部内边距 */
-    [data-testid="stAppViewBlockContainer"] {
-        padding-top: 1.5rem !important; /* 默认通常是 6rem，这里大幅缩小 */
-        padding-bottom: 1rem !important;
     }
     
-    /* 4. 针对旧版本或部分特定主题的兜底消除 */
-    .main .block-container {
-        padding-top: 1.5rem !important;
+    /* 2. 移除整个页面包裹器的顶部间距（防止保留空白占位） */
+    .stApp {
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    /* 3. 核心：强制将主内容容器拉到最上方，完全消除默认的 6rem 大留白 */
+    [data-testid="stAppViewBlockContainer"], 
+    .main .block-container,
+    div.block-container {
+        padding-top: 0rem !important;  /* 设为 0，彻底死死贴住浏览器最顶部 */
+        margin-top: 0rem !important;
+        padding-bottom: 1rem !important;
     }
     </style>
     """,
