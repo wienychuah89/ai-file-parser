@@ -3,7 +3,6 @@ from google import genai
 from google.genai import types  # 2026最新大模型SDK标准数据类型模块
 import PIL.Image
 import urllib.parse
-import os
 
 # 1. 页面基本配置
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
@@ -79,7 +78,7 @@ if uploaded_files:
 if ai_contents:
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
-        ["✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件", "🏥 肾移植复诊报告"]
+        [ "✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件","🏥 肾移植复诊报告"]
     )
     
     user_baseline_prompt = ""
@@ -142,20 +141,6 @@ if ai_contents:
                         contents=final_inputs
                     )
                     st.session_state["analysis_result"] = response.text
-                    
-                    # 🌟 破局神技：在后台用干净的 Python 模块将文字静默转为标准的独立音频流
-                    try:
-                        from gtts import gTTS
-                        clean_text = response.text.replace("*", "").replace("#", "").replace("`", "").replace("\n", " ")
-                        tts = gTTS(text=clean_text, lang='zh-cn')
-                        tts.save("temp_report.mp3")
-                        with open("temp_report.mp3", "rb") as f:
-                            st.session_state["audio_bytes"] = f.read()
-                        if os.path.exists("temp_report.mp3"):
-                            os.remove("temp_report.mp3")
-                    except:
-                        pass # 如果遇到网络波动，不干扰主文本渲染
-                    
                     success = True
                     st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
                     break
@@ -176,11 +161,31 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 官方原生高权多媒体组件（100% 成功出声）
-    if "audio_bytes" in st.session_state:
-        st.write("🎵 点击左侧【▶️ 播放】键，即可直接收听由 AI 为您实时生成的普通话声音报告：")
-        st.audio(st.session_state["audio_bytes"], format="audio/mp3")
-        st.write("")
+    # ✨ 核心安全洗净：去除冲突符号，支持手机原生全语种自动混合朗读机制
+    clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "").replace('"', '').replace('\\', '')
+    
+    # 🌟 终极穿透控制台：完全顺应 Streamlit Cloud 云端跨域安全网。
+    # 移除危险的 window.top 穿透，改用合规的原生语音调度。不指定单一强制语言语言，激活手机最聪明的“中英智能双语混合朗读”！
+    tts_template_html = """
+    <div style="background-color: #F0F2F6; padding: 14px; border-radius: 8px; margin-bottom: 18px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
+        <p style="margin: 0px 0px 8px 0px; font-size: 13px; color: #666; font-weight: bold;">🔊 智能中英双语朗读控制台（发信前后均可随意收听控制）：</p>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER');
+                    msg.rate = 1.0;
+                    msg.volume = 1.0;
+                    window.speechSynthesis.speak(msg);
+                } catch(err) { alert('语音引擎加载中，请再次点击播放！'); }
+            " style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(59,130,246,0.2);">▶️ 点击播放双语报告</button>
+            
+            <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(239,68,68,0.2);">⏹️ 停止</button>
+        </div>
+    </div>
+    """
+    final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", clean_audio_text)
+    st.markdown(final_tts_html, unsafe_allow_html=True)
     
     # 显示漂亮的原生分析表格
     st.markdown(st.session_state["analysis_result"])
@@ -188,7 +193,6 @@ if "analysis_result" in st.session_state:
     st.divider()
     st.subheader("📲 结果快捷分享通道")
     
-    # 🌟 流程大优化：把【锁号码】的动作提到最前面，防止先复制后锁号码导致剪贴板被冲刷！
     with st.form("whatsapp_form", clear_on_submit=False):
         st.info("💡 步骤一：请先在下方输入接收人电话，并点击【🔒 锁定号码并生成绿色通道】按钮：")
         target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):", value="")
@@ -203,7 +207,6 @@ if "analysis_result" in st.session_state:
                 st.session_state["wa_url"] = "https://wa.me/"
                 st.success("✅ 已锁定为空号模式！请继续完成下方步骤二和步骤三👇")
 
-    # 只有当用户锁定完号码后，才依次亮起复制和真正的跳转按钮，顺理成章、万无一失！
     st.write("")
     st.write("📋 步骤二：点击下方按钮，将上方的分析报告真正复制到您的手机剪贴板中：")
     
