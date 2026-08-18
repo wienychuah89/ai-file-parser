@@ -6,6 +6,35 @@ import PIL.Image
 import urllib.parse
 import os
 import asyncio
+# ==========================================
+# 🌟 PREMIUM UI TRICK: 强力隐藏 GitHub 元素
+# ==========================================
+st.markdown(
+    """
+    <style>
+    /* 1. 拦截所有指向 GitHub 的顶部锚点图标和链接 */
+    a[href*="github.com"] {
+        display: none !important;
+    }
+    
+    /* 2. 隐藏最新版 Streamlit 的右上方工具栏中的主菜单/部署/Fork 区域 */
+    [data-testid="stAppDeployButton"], 
+    [data-testid="stHeader"] iframe,
+    header a {
+        display: none !important;
+    }
+    
+    /* 3. 保守型兜底：隐藏可能包含该图标的整个右侧头部元素（保持纯净） */
+    header {
+        background-color: transparent !important;
+    }
+    header div:first-child {
+        visibility: hidden !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # 1. 页面基本配置
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
