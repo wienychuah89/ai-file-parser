@@ -103,7 +103,7 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 突围分享版（官方原生修复版） =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版 =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -111,26 +111,27 @@ if "analysis_result" in st.session_state:
     st.divider()
     st.subheader("📲 结果快捷分享")
     
-    # ✨ 终极修复：使用 Streamlit 官方最标准的 st.code 组件
-    # 它会在手机界面上渲染一个漂亮的文本框，并且右上角【自动自带官方一键复制按钮】
-    # 手机用户轻轻一按右上角图标即可完美复制，100% 免疫任何系统拦截，界面绝不吐代码！
-    st.write("📋 提示：请点击下方文本框【右上角的双正方形图标】即可一键复制完整分析报告！")
+    # 1. 官方原生的 st.code 组件：提供最稳妥、最安全的双正方形一键复制备份按钮
+    st.write("📋 第一步：点击下方文本框【右上角的双正方形图标】复制报告备份（以防万一）：")
     st.code(st.session_state["analysis_result"], language="markdown")
     
     st.write("")
-    st.info("💡 复制成功后，您可以选择在下方输入接收人电话，直接跳转去 WhatsApp 粘贴发送：")
+    st.info("💡 第二步：在下方输入接收人电话，点击绿色按钮将自动带上文字直达 WhatsApp 发送：")
     
     # 允许输入特定的特定人电话号码
-    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择):", value="")
+    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择联系人):", value="")
     clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
     
+    # ✨ 核心升级：对 AI 分析出来的 Markdown 文本进行最高级别的智能安全网络编码，防止特殊字符卡死跳转
+    encoded_text = urllib.parse.quote(st.session_state["analysis_result"])
+    
+    # ✨ 终极修复：使用官方最强大的 api.whatsapp 协议，完美兼容特定号码和文字自动填充！
     if clean_phone:
-        wa_direct_url = f"https://wa.me/{clean_phone}"
-        
+        wa_direct_url = f"https://whatsapp.com{clean_phone}&text={encoded_text}"
     else:
-        wa_direct_url = "https://wa.me"
+        wa_direct_url = f"https://whatsapp.com{encoded_text}"
         
-    # ✨ 官方最标准的无参数原生域名超链接，安卓快捷方式外壳 100% 不会拦截这一类静态锚点链接！
+    # 渲染带有终极穿透力的官方分享大按钮（target="_blank" 允许完美拉起本地App）
     whatsapp_btn_html = f"""
     <a href="{wa_direct_url}" target="_blank" style="
         display: block; 
@@ -145,6 +146,7 @@ if "analysis_result" in st.session_state:
         border-radius: 8px; 
         margin-top: 5px; 
         box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-    ">🟢 前往 WhatsApp 软件</a>
+    ">🟢 一键发送到 WhatsApp</a>
     """
     st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
+
