@@ -7,34 +7,45 @@ import urllib.parse
 import os
 import asyncio
 # ==========================================
-# 🌟 PREMIUM UI TRICK: 强力隐藏 GitHub 元素
+# 🌟 PREMIUM UI TRICK: 隐藏 GitHub 元素 + 消除顶部留白
 # ==========================================
 st.markdown(
     """
     <style>
-    /* 1. 拦截所有指向 GitHub 的顶部锚点图标和链接 */
+    /* 1. 强力隐藏所有 GitHub 元素 */
     a[href*="github.com"] {
         display: none !important;
     }
-    
-    /* 2. 隐藏最新版 Streamlit 的右上方工具栏中的主菜单/部署/Fork 区域 */
     [data-testid="stAppDeployButton"], 
     [data-testid="stHeader"] iframe,
     header a {
         display: none !important;
     }
     
-    /* 3. 保守型兜底：隐藏可能包含该图标的整个右侧头部元素（保持纯净） */
-    header {
+    /* 2. 彻底干掉顶部 Header 的高度 */
+    [data-testid="stHeader"] {
+        height: 0px !important;
+        min-height: 0px !important;
+        padding: 0px !important;
+        margin: 0px !important;
         background-color: transparent !important;
     }
-    header div:first-child {
-        visibility: hidden !important;
+
+    /* 3. 压缩主内容区域（Main Content）的顶部内边距 */
+    [data-testid="stAppViewBlockContainer"] {
+        padding-top: 1.5rem !important; /* 默认通常是 6rem，这里大幅缩小 */
+        padding-bottom: 1rem !important;
+    }
+    
+    /* 4. 针对旧版本或部分特定主题的兜底消除 */
+    .main .block-container {
+        padding-top: 1.5rem !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # 1. 页面基本配置
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
