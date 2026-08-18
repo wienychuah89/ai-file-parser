@@ -1,3 +1,4 @@
+# 🌟 PREMIUM UI TRICK: Completely hide the GitHub Fork button and Cat Logo
 import streamlit as st
 from google import genai
 from google.genai import types  # 2026最新大模型SDK标准数据类型模块
