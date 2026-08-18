@@ -7,8 +7,8 @@ import urllib.parse
 # 1. 页面基本配置
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
 
-# ================= 🔒 第一步：智能防刷新密码锁（可告诉你的同伴） =================
-PASSWORD = "cwnpea6125"  # 👈 保持你之前的密码不变，告诉同伴这个密码即可
+# ================= 🔒 第一步：智能防刷新密码锁 =================
+PASSWORD = "cwnpea6125"  # 👈 保持你之前的密码不变
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -76,13 +76,12 @@ if uploaded_files:
 
 # 触发 AI 分析
 if ai_contents:
-    # 选项一：先选大类型
+    # 选项一：先选大类型（增加了自由输入无干扰通道）
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
-        [ "✍️ 自由输入/其他全新文件","🧾 车辆/商业发票收据", "📄 商业合同与通用文件","🏥 肾移植复诊报告", ]
+        ["✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件",  "🏥 肾移植复诊报告"]
     )
     
-    # 🌟 核心加强：如果是肾复诊报告，多弹出一个极其专业的基线选择菜单！
     user_baseline_prompt = ""
     if file_mode == "🏥 肾移植复诊报告":
         baseline_option = st.selectbox(
@@ -91,20 +90,15 @@ if ai_contents:
                 "🟢 正常健康人群或非常优秀的基线 (60 - 110 umol/L)",
                 "🟡 相对平稳的轻度基线 (110 - 130 umol/L)",
                 "🟠 常见的中度稳定基线 (130 - 160 umol/L)",
-                "🔴 我的专属稳定基线 (160 - 180 umol/L)",
                 "🟣 偏高的稳定基线 (180 - 210 umol/L)",
                 "⚪ 其他基线（可在下方提问框中自行修改具体数值）"
             ],
-            index=3  # 默认停在你的 160-180 上
+            index=3
         )
-        
-        # 将用户的基线选项变成扔给 AI 的精细指令
         user_baseline_prompt = f"我是一名肾移植患者，我个人的血清肌酐（Creatinine）长期基础稳定值（Baseline）大约保持在【{baseline_option}】。\n"
-        
-        # 组装最终提示词
         default_prompt = (
             f"{user_baseline_prompt}"
-            "请帮我严格提取并整理这几页化化验单中的关键信息：\n"
+            "请帮我严格提取并整理这几页化验单中的关键信息：\n"
             "1. 肌酐（Creat）、尿素（Urea）、血红蛋白（Hb）等核心数值，用Markdown表格整齐列出，并附带参考说明。\n"
             "2. 请对比我上面选择的个人基线，分析我这次的肾功能是否在我的安全稳定范围内？\n"
             "3. 请给出针对我当前指标需要注意的日常水分摄入、饮食注意事项以及自我监测提示。"
@@ -126,7 +120,6 @@ if ai_contents:
             "4. 联络方式（电话/邮箱/联系人）？"
         )
     else:
-        # ✨ 终极舒适通道：如果选了自由输入，默认给一行温馨引导，后面全留白让用户自己发挥！
         default_prompt = "请根据我上传的文件，帮我分析以下具体问题：\n1. "
 
     # 渲染最终展示框
@@ -168,11 +161,11 @@ if ai_contents:
 # ================= 🟢 第四步：一键复制与 WhatsApp 终极分享 =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
-
-    # ✨ 核心安全升级：用最干净的纯文本替换机制，彻底消灭 HTML 大括号引起的页面死锁 Bug
+    
+    # ✨ 核心安全升级：清洗文本，去除冲突字符
     clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "\\'").replace('"', '\\"')
     
-    # 纯静态 HTML 模版，里面不含有任何危险的 Python 大括号
+    # 纯静态 HTML 模版，隔离大括号，100% 杜绝页面卡死
     tts_template_html = """
     <div style="background-color: #F0F2F6; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
         <button onclick="
@@ -192,18 +185,15 @@ if "analysis_result" in st.session_state:
         ">🔇 停止</button>
     </div>
     """
-    # 在安全的外部，把清洗好的文本精准扣入播放器，上传功能绝对不会再失效了！
     final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", clean_audio_text)
     st.markdown(final_tts_html, unsafe_allow_html=True)
-
-
-
     
+    # 显示漂亮的原生分析表格
     st.markdown(st.session_state["analysis_result"])
     
     st.divider()
     st.subheader("📲 结果快捷分享")
-
+    
     st.write("📋 步骤一：点击下方按钮，将分析报告真正复制到您的手机剪贴板中。")
     
     from st_copy_to_clipboard import st_copy_to_clipboard
@@ -223,10 +213,10 @@ if "analysis_result" in st.session_state:
         if lock_button:
             clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
             if clean_phone:
-                st.session_state["wa_url"] = f"https://wa.me/{clean_phone}"
+                st.session_state["wa_url"] = f"https://wa.me{clean_phone}"
                 st.success(f"✅ 号码 {clean_phone} 锁定成功！直达链接已在下方为您准备就绪👇")
             else:
-                st.session_state["wa_url"] = "https://wa.me/"
+                st.session_state["wa_url"] = "https://wa.me"
                 st.success("✅ 已锁定为空号模式！直达链接已在下方为您准备就绪👇")
 
     if "wa_url" in st.session_state:
