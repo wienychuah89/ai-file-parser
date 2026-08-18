@@ -14,7 +14,7 @@ if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-    user_password = st.text_input("🔑 请输入访问密码（换肾同伴共享通道）：", type="password")
+    user_password = st.text_input("🔑 请输入访问密码：", type="password")
     if user_password == PASSWORD:
         st.session_state["authenticated"] = True
         st.rerun()
