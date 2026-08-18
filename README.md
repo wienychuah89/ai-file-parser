@@ -35,7 +35,6 @@
 
 在部署前，请确保项目根目录下包含 `requirements.txt`：
 
-```text
 streamlit
 google-genai
 pillow
