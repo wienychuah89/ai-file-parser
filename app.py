@@ -152,9 +152,9 @@ if "analysis_result" in st.session_state:
     
     # 官方标准的干净短域名格式，100% 击穿拦截，直达特定联系人聊天界面
     if clean_phone:
-        wa_direct_url = f"https://wa.me{clean_phone}"
+        wa_direct_url = f"https://wa.me/{clean_phone}"
     else:
-        wa_direct_url = "https://wa.me"
+        wa_direct_url = "https://wa.me/"
         
     whatsapp_btn_html = f"""
     <a href="{wa_direct_url}" target="_blank" style="
