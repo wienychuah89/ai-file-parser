@@ -29,12 +29,11 @@ else:
 
 # ================= 📄 第三步：App 核心业务功能 =================
 st.title("📄 AI 多功能文件分析器")
-st.write("点击下方区域，可直接调用手机【后置摄像头】连续拍照、上传图片或 PDF 文档。")
+st.info("💡 提示：为防止手机拍照时网页刷新，请先用手机自带相机拍好文件，再点击下方按钮前往相册批量勾选上传。")
 
-# ✨ 终极修复：彻底删掉报错的 st.camera_input
-# 通过 accept_multiple_files=True 支持单次或连续拍照多张
+# 纯净的相册多选与 PDF 上传组件
 uploaded_files = st.file_uploader(
-    "📷 拍照或选择文件（支持单次多张）", 
+    "📂 从相册选择照片或 PDF 文件（支持单次多选）", 
     type=["jpg", "jpeg", "png", "pdf"], 
     accept_multiple_files=True
 )
@@ -59,7 +58,8 @@ if uploaded_files:
         else:
             image = PIL.Image.open(uploaded_file)
             ai_contents.append(image)
-            st.image(image, width=200, caption=f"📷 照片 {i+1}: {uploaded_file.name}")
+            # 按顺序整齐展示你勾选的每一张多页文件照片
+            st.image(image, width=200, caption=f"📷 文件第 {i+1} 页: {uploaded_file.name}")
 
     # 让你可以自己输入想问的问题
     user_prompt = st.text_area(
@@ -82,6 +82,29 @@ if uploaded_files:
                 
             except Exception as e:
                 st.error(f"分析失败: {str(e)}")
+
+# ================= 🟢 第四步：一键分享到 WhatsApp =================
+if "analysis_result" in st.session_state:
+    st.subheader("📊 AI 分析结果")
+    st.markdown(st.session_state["analysis_result"])
+    
+    st.divider()
+    st.subheader("📲 结果转发分享")
+    
+    # 允许输入特定的特定人电话号码（国际格式，例如马来西亚 60123456789）
+    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择联系人):", value="")
+    
+    # 将 AI 文本进行网页编码
+    encoded_text = urllib.parse.quote(st.session_state["analysis_result"])
+    
+    # 构造 WhatsApp 转发链接
+    if target_phone.strip():
+        whatsapp_url = f"https://whatsapp.com{target_phone.strip()}&text={encoded_text}"
+    else:
+        whatsapp_url = f"https://whatsapp.com{encoded_text}"
+        
+    st.link_button("🟢 一键发送到 WhatsApp", whatsapp_url, use_container_width=True)
+
 
 # ================= 🟢 第四步：一键分享到 WhatsApp =================
 if "analysis_result" in st.session_state:
