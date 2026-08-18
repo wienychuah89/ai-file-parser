@@ -41,3 +41,15 @@ google-genai
 pillow
 edge-tts
 st-copy-to-clipboard
+
+
+⚙️ 配置说明 (secrets.toml)
+
+1.在项目根目录创建 .streamlit/secrets.toml 文件, 为了保护敏感密钥安全，切勿将 API Key 和密码硬编码在代码中。
+2.Streamlit Cloud 部署配置, 登录 share.streamlit.io 并部署应用。
+
+💡 使用小贴士
+
+移动端拍照上传：为避免移动端浏览器直接调用相机拍照导致网页自动刷新，建议先使用手机自带相机拍好文件，再通过上传组件前往系统相册勾选。
+多 Key 额度叠加规则：Google AI Studio 免费额度（Free Tier）是按独立项目（Project）计算的。若要获得翻倍额度（例如 20 + 20 + 20 次/天），各 Key 必须在不同的 Project 下创建。
+
