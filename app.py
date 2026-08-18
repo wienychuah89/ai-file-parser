@@ -10,7 +10,7 @@ import asyncio
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
 
 # ================= 🔒 第一步：智能防刷新密码锁 =================
-PASSWORD = "cwnpea76125"  # 👈 保持你之前的密码不变
+PASSWORD = "cwnpea6125"  # 👈 保持你之前的密码不变
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -130,7 +130,7 @@ if ai_contents:
         height=180
     )
 
-    if st.button("🚀 开始 AI 深度 analyses", type="primary"):
+    if st.button("🚀 开始 AI 深度分析", type="primary"):
         with st.spinner("AI 正在深度分析中，请稍候..."):
             final_inputs = [*ai_contents, user_prompt]
             success = False
