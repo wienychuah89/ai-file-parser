@@ -6,18 +6,16 @@ import PIL.Image
 import urllib.parse
 import os
 import asyncio
+# 1. 页面基本配置
+st.set_page_config(page_title="AI 文件分析器", layout="centered")
 # ==========================================
-# 🌟 PREMIUM UI TRICK: 100% 完美抹平顶部 & 完全隐藏 GitHub 元素
+# 🌟 移动端边缘留白与字体微调 CSS
 # ==========================================
 st.markdown(
     """
     <style>
-    /* 1. 强力隐藏所有顶部控制栏、Fork 按钮、部署按钮及猫咪图标 */
-    [data-testid="stHeader"], 
-    [data-testid="stAppDeployButton"], 
-    header, 
-    .stAppHeader,
-    a[href*="github.com"] {
+    /* 1. 之前为您配置的隐藏 GitHub 元素和抹平顶部大留白的代码（保持保留） */
+    [data-testid="stHeader"], [data-testid="stAppDeployButton"], header, .stAppHeader, a[href*="github.com"] {
         display: none !important;
         visibility: hidden !important;
         height: 0px !important;
@@ -26,19 +24,17 @@ st.markdown(
         margin: 0px !important;
     }
     
-    /* 2. 移除整个页面包裹器的顶部间距（防止保留空白占位） */
-    .stApp {
-        margin-top: 0px !important;
-        padding-top: 0px !important;
+    /* 2. 优化主容器在手机端的左右内边距，确保文字和标题的宽度符合手机视觉 */
+    [data-testid="stAppViewBlockContainer"], .main .block-container, div.block-container {
+        padding-top: 0.5rem !important;  
+        padding-left: 1rem !important;   /* 在手机端保留 1rem 的安全边缘，防止文字撞墙 */
+        padding-right: 1rem !important;  /* 确保右侧字体换行时有漂亮的呼吸感 */
+        padding-bottom: 1rem !important;
     }
 
-    /* 3. 核心：强制将主内容容器拉到最上方，完全消除默认的 6rem 大留白 */
-    [data-testid="stAppViewBlockContainer"], 
-    .main .block-container,
-    div.block-container {
-        padding-top: 0rem !important;  /* 设为 0，彻底死死贴住浏览器最顶部 */
-        margin-top: 0rem !important;
-        padding-bottom: 1rem !important;
+    /* 3. 锁定输入框基础字体，防止 iOS 手机点击时整个网页自动放大变形 */
+    div[data-testid="stTextInput"] input {
+        font-size: 16px !important;     
     }
     </style>
     """,
@@ -46,8 +42,7 @@ st.markdown(
 )
 
 
-# 1. 页面基本配置
-st.set_page_config(page_title="AI 文件分析器", layout="centered")
+
 
 # ================= 🔒 第一步：智能防刷新密码锁 =================
 PASSWORD = "112234455"  # 👈 保持你之前的密码不变
