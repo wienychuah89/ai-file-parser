@@ -1,3 +1,4 @@
+# 🚀 强制刷新服务器缓存版本：v3.0.0
 import streamlit as st
 from google import genai
 from google.genai import types  # 2026最新大模型SDK标准数据类型模块
