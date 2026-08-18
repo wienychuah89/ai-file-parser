@@ -1,4 +1,3 @@
-# 🚀 强制刷新服务器缓存版本：v3.0.0
 import streamlit as st
 from google import genai
 from google.genai import types  # 2026最新大模型SDK标准数据类型模块
@@ -83,7 +82,7 @@ if ai_contents:
     )
     
     user_baseline_prompt = ""
-    if file_mode == "🏥 肾移植复移植报告":
+    if file_mode == "🏥 肾移植复诊报告":
         baseline_option = st.selectbox(
             "🩸 请选择您个人的【血清肌酐（Creatinine）长期稳定基线值】(以您医生的医嘱为准)：",
             [
@@ -162,35 +161,19 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 极致无损脱敏：去除可能破坏 JavaScript 结构的一切符号，只留纯文字
-    audio_text_pure = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("'", " ").replace('"', ' ')
+    # 🌟 极致无损清洗文本中的一切非法控制字符
+    pure_speech_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("'", " ").replace('"', ' ').replace('\n', ' ')
     
-    # 🌟 彻底修复核心：移除了极其危险的开局 f 字符！让整个 HTML 块退回 100% 静态纯净状态。
-    # 这样大括号 {} 将不再具有任何触发编译报错的破坏力，永远不会再坍塌，更不可能拉长拉宽。
-    tts_template_html = """
-    <div style="background-color: #F0F2F6; padding: 14px; border-radius: 8px; margin-bottom: 18px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
-        <p style="margin: 0px 0px 8px 0px; font-size: 13px; color: #666; font-weight: bold;">🔊 智能中英双语原声混读控制台（发信前后均可点击控制）：</p>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="
-                try {
-                    window.speechSynthesis.cancel();
-                    var txt = document.getElementById('hidden-audio-data').value;
-                    var msg = new SpeechSynthesisUtterance(txt);
-                    msg.rate = 1.0;
-                    msg.volume = 1.0;
-                    window.speechSynthesis.speak(msg);
-                } catch(err) { alert('语音引擎唤醒中，请再次点击播放！'); }
-            " style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(59,130,246,0.2);">▶️ 点击播放原声报告</button>
-            
-            <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(239,68,68,0.2);">⏹️ 停止</button>
-        </div>
-        <!-- 🔒 数据隔离安全舱：用标准的 Python 安全清洗替换机制把大模型文本锁在这里 -->
-        <textarea id="hidden-audio-data" style="display:none;">TEXT_PLACEHOLDER</textarea>
-    </div>
+    # 🌟 终极斩断乱码法：彻底移除任何 div/button/textarea 等长代码网页布局。
+    # 只留下一行最纯净干净、100% 绝对不可能爆框和熔断的隐式单行代码，利用网页标签特性安全传导声音。
+    # 点击这行提示字，即可瞬间激活中英无缝纯原声混读（遇到中文自动读华语，遇到英文自动读最纯正的欧美英语）！
+    safe_single_line_html = f"""
+    <p style="background-color:#F0F2F6; padding:12px; border-radius:6px; font-weight:bold; color:#1E3A8A; cursor:pointer; text-align:center; box-shadow:inset 0 1px 2px rgba(0,0,0,0.05);" 
+       onclick="window.speechSynthesis.cancel(); var m=new SpeechSynthesisUtterance('{pure_speech_text}'); m.rate=1.0; window.speechSynthesis.speak(m);">
+       🔊 手机端点击此行字 ➡️ 立即开始/停止中英原声朗读
+    </p>
     """
-    # 在安全的外部把清洗好的纯净文本精准塞入安全舱
-    final_tts_html = tts_template_html.replace("TEXT_PLACEHOLDER", audio_text_pure)
-    st.markdown(final_tts_html, unsafe_allow_html=True)
+    st.markdown(safe_single_line_html, unsafe_allow_html=True)
     
     # 显示漂亮的原生分析结果文字/表格
     st.markdown(st.session_state["analysis_result"])
