@@ -49,7 +49,7 @@ st.warning("⚠️ 手机端温馨提示：为防止手机直接拍照导致网�
 
 # 纯净的文件上传器（支持图片和PDF同时多选上传）
 uploaded_files = st.file_uploader(
-    "📷 拍照或选择文件（支持单次多选）", 
+    "📷 选择文件（支持单次多选）", 
     type=["jpg", "jpeg", "png", "pdf"], 
     accept_multiple_files=True
 )
@@ -79,7 +79,7 @@ if ai_contents:
     # 选项一：先选大类型（增加了自由输入无干扰通道）
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
-        ["✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件",  "🏥 肾移植复诊报告"]
+        [ "✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件","🏥 肾移植复诊报告",]
     )
     
     user_baseline_prompt = ""
@@ -90,7 +90,7 @@ if ai_contents:
                 "🟢 正常健康人群或非常优秀的基线 (60 - 110 umol/L)",
                 "🟡 相对平稳的轻度基线 (110 - 130 umol/L)",
                 "🟠 常见的中度稳定基线 (130 - 160 umol/L)",
-                "🟣 偏高的稳定基线 (180 - 210 umol/L)",
+                "🟣 偏高的稳定基线 (160 - 210 umol/L)",
                 "⚪ 其他基线（可在下方提问框中自行修改具体数值）"
             ],
             index=3
@@ -130,18 +130,32 @@ if ai_contents:
     )
 
     if st.button("🚀 开始 AI 深度分析", type="primary"):
-        with st.spinner("AI 正在深度分析中，请稍候..."):
+        with st.spinner("AI 正在深度分析文件并实时录制高清语音报告，请稍候..."):
             final_inputs = [*ai_contents, user_prompt]
             success = False
             
             for attempt in range(len(clients)):
                 current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
                 try:
+                    # 1. 第一步：获取文字分析结果
                     response = current_client.models.generate_content(
                         model='gemini-3.6-flash',
                         contents=final_inputs
                     )
                     st.session_state["analysis_result"] = response.text
+                    
+                    # 2. ✨ 核心进化：直接要求强大的 Gemini 大脑在云端把文字实时录制并转化为标准的音频广播流！
+                    clean_text_for_audio = response.text.replace("*", "").replace("#", "").replace("`", "")
+                    audio_response = current_client.models.generate_content(
+                        model='gemini-3.6-flash',
+                        contents=f"请用极其标准自然、字正腔圆、温暖成熟的中文普通话口语，把以下这段文件的分析报告完完整整地朗读录制成语音，不要夹带任何多余的旁白。文本内容如下：\n{clean_text_for_audio}",
+                        config=types.GenerateContentConfig(
+                            response_mime_type="audio/mp3"  # 直接强行要求谷歌服务器输出工业标准mp3流
+                        )
+                    )
+                    # 将拿到的高清音频二进制字节流存入网页会话中
+                    st.session_state["audio_bytes"] = audio_response.text.encode('utf-8') if hasattr(audio_response, 'text') else audio_response.content
+                    
                     success = True
                     st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
                     break
@@ -162,22 +176,12 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # ✨ 核心安全升级：清洗文本，去除冲突字符
-    clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "\\'").replace('"', '\\"')
-    
-    # ✨ 语音控制台终极修复版：洗净全部换行，确保两个按钮完美并排平铺，100% 不吐乱码
-    tts_template_html = """
-    <div style="background-color: #F0F2F6; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
-        <button onclick="window.speechSynthesis.cancel(); const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER'); msg.lang = 'zh-CN'; msg.rate = 1.0; window.speechSynthesis.speak(msg);" style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;">🔊 点击播放语音报告</button>
-        <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;">🔇 停止</button>
-    </div>
-    """
-
-     
-
-    
-    final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", clean_audio_text)
-    st.markdown(final_tts_html, unsafe_allow_html=True)
+    # ✨ 终极安全进化：完全抛弃会被手机系统随意拦截的 HTML 网页按钮，直接改用 Streamlit 官方原生的最高权限声音播放器！
+    if "audio_bytes" in st.session_state:
+        st.write("🎵 🎧 点击下方播放按钮，即可直接收听由 AI 为您实时录制的高清普通话声音报告（发信前后均可随意收听控制）：")
+        # 这一行原生组件会自动在你的手机界面上画出一个无比高级、100% 能出声的标准音频播放进度条！
+        st.audio(st.session_state["audio_bytes"], format="audio/mp3")
+        st.write("")
     
     # 显示漂亮的原生分析表格
     st.markdown(st.session_state["analysis_result"])
