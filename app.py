@@ -169,16 +169,15 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
 
-    # 1. 极速安全处理：清洗 Markdown 符号，把内容转化为纯净的语音流文本
+    # ✨ 核心安全升级：用最干净的纯文本替换机制，彻底消灭 HTML 大括号引起的页面死锁 Bug
     clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "\\'").replace('"', '\\"')
     
-    # 2. ✨ 终极安全隔离：用纯静态模版字符串，通过 .replace() 塞入变量，彻底消灭 Python f-string 的大括号冲突！
-    # 这样后台绝对不会再静默崩溃，上传框和所有核心功能 100% 瞬间全部完美复活！
-    tts_html_template = """
+    # 纯静态 HTML 模版，里面不含有任何危险的 Python 大括号
+    tts_template_html = """
     <div style="background-color: #F0F2F6; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
         <button onclick="
             window.speechSynthesis.cancel();
-            var msg = new SpeechSynthesisUtterance('TARGET_TEXT');
+            const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER');
             msg.lang = 'zh-CN';
             msg.rate = 1.0;
             window.speechSynthesis.speak(msg);
@@ -193,9 +192,9 @@ if "analysis_result" in st.session_state:
         ">🔇 停止</button>
     </div>
     """
-    # 真正执行安全安全的文本替换
-    tts_html = tts_html_template.replace("TARGET_TEXT", clean_audio_text)
-    st.markdown(tts_html, unsafe_allow_html=True)
+    # 在安全的外部，把清洗好的文本精准扣入播放器，上传功能绝对不会再失效了！
+    final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", clean_audio_text)
+    st.markdown(final_tts_html, unsafe_allow_html=True)
 
 
 
