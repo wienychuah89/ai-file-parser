@@ -231,7 +231,7 @@ if ai_contents:
                         if attempt < len(clients) - 1:
                             continue
                         else:
-                            st.error("⚠️ 抱歉，共享通道当前请求过于频繁，所有备用钥匙已被临时控流，请在手机前等待 20 秒后再次点击分析即可！: {str(e)}")
+                            st.error(f"⚠️ 抱歉，共享通道当前请求过于频繁，所有备用钥匙已被临时控流，请在手机前等待 20 秒后再次点击分析即可！: {str(e)}")
 
          
                     elif "503" in str(e) or "UNAVAILABLE" in str(e):
