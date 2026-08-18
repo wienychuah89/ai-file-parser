@@ -29,40 +29,39 @@ else:
 
 # ================= 📄 第三步：App 核心业务功能 =================
 st.title("📄 AI 多功能文件分析器")
-st.write("支持手机防崩溃拍照、上传多图或 PDF 文档。")
+st.write("点击下方区域，可直接调用手机【后置摄像头】连续拍照、上传图片或 PDF 文档。")
 
-# ✨ 新增：拍照模式切换，彻底解决安卓直接拍照无反应的问题
-upload_mode = st.radio("📸 请选择输入方式：", ["从相册选择照片/PDF (支持多选)", "手机直接拍照 (防崩溃单张模式)"])
+# ✨ 终极修复：彻底删掉报错的 st.camera_input
+# 通过 accept_multiple_files=True 支持单次或连续拍照多张
+uploaded_files = st.file_uploader(
+    "📷 拍照或选择文件（支持单次多张）", 
+    type=["jpg", "jpeg", "png", "pdf"], 
+    accept_multiple_files=True
+)
 
-ai_contents = []
+if uploaded_files:
+    st.success(f"已成功读取 {len(uploaded_files)} 个文件！")
+    
+    # 准备传给 AI 的内容列表
+    ai_contents = []
+    
+    # 循环处理和展示每一个上传的文件
+    for i, uploaded_file in enumerate(uploaded_files):
+        file_type = uploaded_file.name.split(".")[-1].lower()
+        
+        if file_type == "pdf":
+            pdf_bytes = uploaded_file.read()
+            ai_contents.append({
+                "mime_type": "application/pdf",
+                "data": pdf_bytes
+            })
+            st.info(f"📁 已载入 PDF: {uploaded_file.name}")
+        else:
+            image = PIL.Image.open(uploaded_file)
+            ai_contents.append(image)
+            st.image(image, width=200, caption=f"📷 照片 {i+1}: {uploaded_file.name}")
 
-if upload_mode == "从相册选择照片/PDF (支持多选)":
-    uploaded_files = st.file_uploader(
-        "选择图片或 PDF 文件", 
-        type=["jpg", "jpeg", "png", "pdf"], 
-        accept_multiple_files=True
-    )
-    if uploaded_files:
-        for i, uploaded_file in enumerate(uploaded_files):
-            file_type = uploaded_file.name.split(".")[-1].lower()
-            if file_type == "pdf":
-                ai_contents.append({"mime_type": "application/pdf", "data": uploaded_file.read()})
-                st.info(f"📁 已载入 PDF: {uploaded_file.name}")
-            else:
-                image = PIL.Image.open(uploaded_file)
-                ai_contents.append(image)
-                st.image(image, width=200, caption=f"📷 照片: {uploaded_file.name}")
-
-else:
-    # ✨ 专为安卓直接拍照优化的组件
-    camera_file = st.camera_input("请对准文件拍照", facing="environment")
-    if camera_file:
-        image = PIL.Image.open(camera_file)
-        ai_contents.append(image)
-        st.success("📷 照片拍摄成功！")
-
-# 只有当有内容输入时，才显示提问框和分析按钮
-if ai_contents:
+    # 让你可以自己输入想问的问题
     user_prompt = st.text_area(
         "💬 想对 AI 提问什么？", 
         value="请帮我提取并整理出这几页文件中的关键信息：\n1. 文件的基本主题是什么？\n2. 关键日期（什么时候到期/截止）？\n3. 核心地点或地址？\n4. 联络方式（电话/邮箱/联系人）？"
@@ -83,6 +82,29 @@ if ai_contents:
                 
             except Exception as e:
                 st.error(f"分析失败: {str(e)}")
+
+# ================= 🟢 第四步：一键分享到 WhatsApp =================
+if "analysis_result" in st.session_state:
+    st.subheader("📊 AI 分析结果")
+    st.markdown(st.session_state["analysis_result"])
+    
+    st.divider()
+    st.subheader("📲 结果转发分享")
+    
+    # 允许输入特定的特定人电话号码（国际格式，例如马来西亚 60123456789）
+    target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择联系人):", value="")
+    
+    # 将 AI 文本进行网页编码
+    encoded_text = urllib.parse.quote(st.session_state["analysis_result"])
+    
+    # 构造 WhatsApp 转发链接
+    if target_phone.strip():
+        whatsapp_url = f"https://whatsapp.com{target_phone.strip()}&text={encoded_text}"
+    else:
+        whatsapp_url = f"https://whatsapp.com{encoded_text}"
+        
+    st.link_button("🟢 一键发送到 WhatsApp", whatsapp_url, use_container_width=True)
+
 
 # ================= 🟢 第四步：新增一键分享到 WhatsApp =================
 if "analysis_result" in st.session_state:
