@@ -179,7 +179,7 @@ if ai_contents:
             "4. 联络方式？"
         )
     else:
-        default_prompt = "请根据我上传的文件，分析核心信息并总结要点。"
+        default_prompt = "请根据我上传的文件，分析核心信息并总结要点\n1."
 
     user_prompt = st.text_area(
         "💬 您想对 AI 提问什么？（可直接修改或补充）", 
