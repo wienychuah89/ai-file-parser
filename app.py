@@ -103,7 +103,7 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键分享到 WhatsApp =================
+# ================= 🟢 第四步：一键分享到 WhatsApp（防拦截升级版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -112,11 +112,35 @@ if "analysis_result" in st.session_state:
     st.subheader("📲 结果转发分享")
     
     target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择联系人):", value="")
+    
+    # 智能清洗电话号码：防止用户误输入 + 号或空格导致链接失效
+    clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
+    
     encoded_text = urllib.parse.quote(st.session_state["analysis_result"])
     
-    if target_phone.strip():
-        whatsapp_url = f"https://whatsapp.com{target_phone.strip()}&text={encoded_text}"
+    if clean_phone:
+        whatsapp_url = f"https://whatsapp.com{clean_phone}&text={encoded_text}"
     else:
         whatsapp_url = f"https://whatsapp.com{encoded_text}"
         
-    st.link_button("🟢 一键发送到 WhatsApp", whatsapp_url, use_container_width=True)
+    # ✨ 终极黑科技：利用底层 HTML 强行在当前窗口（_self）打开，100% 击穿安卓快捷方式的拦截网！
+    # 同时使用漂亮的 CSS 样式把链接伪装成一个极具现代感的绿色大按钮
+    whatsapp_btn_html = f"""
+    <a href="{whatsapp_url}" target="_self" style="
+        display: block;
+        width: 100%;
+        text-align: center;
+        background-color: #25D366;
+        color: white;
+        padding: 12px 0px;
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 8px;
+        margin-top: 10px;
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+    ">🟢 一键发送到 WhatsApp</a>
+    """
+    
+    # 渲染防拦截按钮
+    st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
