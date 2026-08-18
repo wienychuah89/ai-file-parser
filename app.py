@@ -55,7 +55,7 @@ if upload_mode == "从相册选择照片/PDF (支持多选)":
 
 else:
     # ✨ 专为安卓直接拍照优化的组件
-    camera_file = st.camera_input("请对准文件拍照")
+    camera_file = st.camera_input("请对准文件拍照", facing="environment")
     if camera_file:
         image = PIL.Image.open(camera_file)
         ai_contents.append(image)
