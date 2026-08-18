@@ -24,12 +24,29 @@ if not st.session_state["authenticated"]:
 # ====================================================
 
 
-# ================= 🔑 第二步：验证 API 密钥 =================
-if "GEMINI_API_KEY" in st.secrets:
-    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-else:
-    st.warning("请先在服务器设置中配置您的 GEMINI_API_KEY")
+# ================= 🔑 第二步：智能双秘钥自动交替验证 =================
+# 在这里定义一个用于存放有效客户端的列表
+clients = []
+
+# 1. 尝试读取第一把钥匙（你之前在高级设置里配好的旧 Key）
+if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"].strip():
+    clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY"].strip()))
+
+# 2. ✨ 新增：尝试读取你新申请的第二把备用钥匙（稍后去高级设置里加一行即可）
+if "GEMINI_API_KEY_BACKUP" in st.secrets and st.secrets["GEMINI_API_KEY_BACKUP"].strip():
+    clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY_BACKUP"].strip()))
+
+# 如果一把钥匙都没配，抛出警告
+if not clients:
+    st.warning("请先在服务器高级设置（Advanced settings）中配置您的 GEMINI_API_KEY")
     st.stop()
+
+# 初始化或维护一个全局的钥匙轮询计数器
+if "key_index" not in st.session_state:
+    st.session_state["key_index"] = 0
+
+# 每次执行时，自动挑出一把当前要使用的钥匙客户端
+client = clients[st.session_state["key_index"] % len(clients)]
 
 
 # ================= 📄 第三步：App 核心业务功能（标准多模态版） =================
