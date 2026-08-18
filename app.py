@@ -7,7 +7,7 @@ import urllib.parse  # 用于将 AI 文本编码为 WhatsApp 链接
 st.set_page_config(page_title="AI 文件分析助手", layout="centered")
 
 # ================= 🔒 第一步：密码锁 =================
-PASSWORD = "你的自定义密码123"  # 👈 保持你之前的密码不变
+PASSWORD =cwnpea6125"  # 👈 保持你之前的密码不变
 
 user_password = st.text_input("🔑 请输入访问密码：", type="password")
 
