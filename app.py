@@ -24,44 +24,30 @@ if not st.session_state["authenticated"]:
 # ====================================================
 
 
-    if st.button("🚀 开始 AI 深度分析", type="primary"):
-        with st.spinner("AI 正在深度分析中，请稍候..."):
-            try:
-                # 1. 正常使用当前选中的钥匙进行第一轮尝试
-                final_inputs = [*ai_contents, user_prompt]
-                response = client.models.generate_content(
-                    model='gemini-3.6-flash',
-                    contents=final_inputs
-                )
-                st.session_state["analysis_result"] = response.text
-                
-            except Exception as e:
-                # 2. ✨ 无感复活黑科技：如果第一轮尝试遇到了 429 频率超限限制
-                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                    # 如果你确实配了多把钥匙，才执行无缝切匙并当场重试
-                    if len(clients) > 1:
-                        st.session_state["key_index"] += 1  # 切换到下一把钥匙
-                        backup_client = clients[st.session_state["key_index"] % len(clients)]
-                        
-                        try:
-                            # 🌟 在后台默默地、不需要用户干预，直接用备用钥匙原地重新发起第二轮轰炸！
-                            response = backup_client.models.generate_content(
-                                model='gemini-3.6-flash',
-                                contents=final_inputs
-                            )
-                            st.session_state["analysis_result"] = response.text
-                            st.success("🎉 第一把钥匙被限流，App 后台已自动无缝调用【备用钥匙】为您强行通过分析！")
-                        except Exception as backup_err:
-                            st.error(f"抱歉，连备用钥匙也暂时忙碌，请等待20秒后再试。错误: {str(backup_err)}")
-                    else:
-                        st.error("⚠️ 当前钥匙按得太急被谷歌限流了，请静静等待 20 秒后重新点击分析即可！")
-                        
-                elif "503" in str(e) or "UNAVAILABLE" in str(e):
-                    st.error("⚠️ 谷歌 AI 服务器刚才临时繁忙，请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
-                else:
-                    st.error(f"分析失败: {str(e)}")
+# ================= 🔑 第二步：智能双秘钥自动交替验证 =================
+# 在这里定义一个用于存放有效客户端的列表
+clients = []
 
+# 1. 尝试读取第一把钥匙（高级设置里的旧 Key）
+if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"].strip():
+    clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY"].strip()))
 
+# 2. 尝试读取第二把备用钥匙
+if "GEMINI_API_KEY_BACKUP" in st.secrets and st.secrets["GEMINI_API_KEY_BACKUP"].strip():
+    clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY_BACKUP"].strip()))
+
+# 如果一把钥匙都没配，抛出警告
+if not clients:
+    st.warning("请先在服务器高级设置（Advanced settings）中配置您的 GEMINI_API_KEY")
+    st.stop()
+
+# 初始化或维护一个全局的钥匙轮询计数器
+if "key_index" not in st.session_state:
+    st.session_state["key_index"] = 0
+
+# ✨ 修复核心：确保在任何情况下，初始的 client 变量都有明确的定义！
+client = clients[st.session_state["key_index"] % len(clients)]
+# ====================================================
 
 # ================= 📄 第三步：App 核心业务功能（标准多模态版） =================
 st.title("📄 AI 多功能文件分析器")
