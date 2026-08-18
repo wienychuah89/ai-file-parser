@@ -125,7 +125,8 @@ if "analysis_result" in st.session_state:
     clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
     
     if clean_phone:
-        wa_direct_url = f"https://wa.me{clean_phone}"
+        wa_direct_url = f"https://wa.me/{clean_phone}"
+        
     else:
         wa_direct_url = "https://wa.me"
         
