@@ -9,12 +9,12 @@ import asyncio
 # 1. 页面基本配置
 st.set_page_config(page_title="AI 文件分析器", layout="centered")
 # ==========================================
-# 🌟 移动端边缘留白与字体微调 CSS
+# 📱 针对超长屏（Razr 60 等）的智能字体与宽度适配
 # ==========================================
 st.markdown(
     """
     <style>
-    /* 1. 之前为您配置的隐藏 GitHub 元素和抹平顶部大留白的代码（保持保留） */
+    /* 1. 隐藏 GitHub 及顶部留白（保持原样） */
     [data-testid="stHeader"], [data-testid="stAppDeployButton"], header, .stAppHeader, a[href*="github.com"] {
         display: none !important;
         visibility: hidden !important;
@@ -24,15 +24,26 @@ st.markdown(
         margin: 0px !important;
     }
     
-    /* 2. 优化主容器在手机端的左右内边距，确保文字和标题的宽度符合手机视觉 */
+    /* 2. ⚡【关键修复】：打破折叠长屏的宽度诅咒 */
     [data-testid="stAppViewBlockContainer"], .main .block-container, div.block-container {
         padding-top: 0.5rem !important;  
-        padding-left: 1rem !important;   /* 在手机端保留 1rem 的安全边缘，防止文字撞墙 */
-        padding-right: 1rem !important;  /* 确保右侧字体换行时有漂亮的呼吸感 */
         padding-bottom: 1rem !important;
+        
+        /* 默认电脑端或宽屏手机的限制 */
+        max-width: 730px !important; 
+        
+        /* 针对折叠屏和窄屏手机：强制将文字横向撑开，左右边距由 1rem(16px) 缩减到 8px，释放更多横向空间 */
+        padding-left: 8px !important;   
+        padding-right: 8px !important;
     }
 
-    /* 3. 锁定输入框基础字体，防止 iOS 手机点击时整个网页自动放大变形 */
+    /* 3. ⚡【关键修复】：全局增强移动端文本换行与字距，防止被拉长 */
+    p, span, label, .stText, div {
+        word-break: break-word !important; /* 强制智能换行 */
+        letter-spacing: 0.02rem !important; /* 稍微拉开一点字间距，显著提升窄屏可读性 */
+    }
+    
+    /* 4. 锁定基础输入框，防止 iOS 缩放（保持保留） */
     div[data-testid="stTextInput"] input {
         font-size: 16px !important;     
     }
@@ -40,8 +51,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
 
 
 # ================= 🔒 第一步：智能防刷新密码锁 =================
