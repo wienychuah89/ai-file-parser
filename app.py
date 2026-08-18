@@ -1,5 +1,6 @@
 import streamlit as st
 from google import genai
+from google.genai import types  # ✨ 2026最新大模型 SDK 标准数据类型模块
 import PIL.Image
 import urllib.parse
 
@@ -31,14 +32,14 @@ else:
     st.stop()
 
 
-# ================= 📄 第三步：App 核心业务功能（纯净上传版） =================
+# ================= 📄 第三步：App 核心业务功能（标准多模态版） =================
 st.title("📄 AI 多功能文件分析器")
 
 st.warning("⚠️ 重要提示：由于部分安卓手机直接拍照会导致网页刷新崩溃，强烈建议您【先用手机自带相机拍好文件】，再点击下方按钮前往【相册/媒体库】批量勾选上传！")
 
 # 纯净的文件上传器（支持图片和PDF同时多选上传）
 uploaded_files = st.file_uploader(
-    "📷 拍照或选择文件（支持单次多张）", 
+    "📷 选择文件（支持单次多选）", 
     type=["jpg", "jpeg", "png", "pdf"], 
     accept_multiple_files=True
 )
@@ -49,14 +50,26 @@ if uploaded_files:
     st.success(f"已成功读取 {len(uploaded_files)} 个文件！")
     for i, uploaded_file in enumerate(uploaded_files):
         file_type = uploaded_file.name.split(".")[-1].lower()
-        file_bytes = uploaded_file.read()  # 读取原生的二进制字节流，彻底解决图片不分析的Bug
+        file_bytes = uploaded_file.read()  # 读取文件的原生二进制字节流
         
         if file_type == "pdf":
-            ai_contents.append({"mime_type": "application/pdf", "data": file_bytes})
+            # ✨ 终极修复：使用最新的 types.Part.from_bytes 正确包装 PDF 数据，通过底层校验
+            ai_contents.append(
+                types.Part.from_bytes(
+                    data=file_bytes,
+                    mime_type="application/pdf"
+                )
+            )
             st.info(f"📁 已载入 PDF: {uploaded_file.name}")
         else:
             mime_type = "image/jpeg" if file_type in ["jpg", "jpeg"] else "image/png"
-            ai_contents.append({"mime_type": mime_type, "data": file_bytes})
+            # ✨ 终极修复：使用最新的 types.Part.from_bytes 正确包装图片数据，彻底干掉 Pydantic 报错
+            ai_contents.append(
+                types.Part.from_bytes(
+                    data=file_bytes,
+                    mime_type=mime_type
+                )
+            )
             try:
                 image = PIL.Image.open(uploaded_file)
                 st.image(image, width=200, caption=f"📷 文件第 {i+1} 页: {uploaded_file.name}")
@@ -73,7 +86,10 @@ if ai_contents:
     if st.button("🚀 开始 AI 深度分析", type="primary"):
         with st.spinner("AI 正在深度分析中，请稍候..."):
             try:
+                # 组合通过标准校验的媒体 Part 列表和用户的提示词字符串
                 final_inputs = [*ai_contents, user_prompt]
+                
+                # 调用最新版 gemini-3.6-flash 进行识别
                 response = client.models.generate_content(
                     model='gemini-3.6-flash',
                     contents=final_inputs
@@ -81,7 +97,7 @@ if ai_contents:
                 st.session_state["analysis_result"] = response.text
                 
             except Exception as e:
-                # 针对 503 谷歌服务器塞车做更温柔的提示
+                # 针对 503 谷歌服务器塞车或瞬时繁忙做友好提示
                 if "503" in str(e) or "UNAVAILABLE" in str(e):
                     st.error("⚠️ 谷歌 AI 服务器刚才打了个盹（临时繁忙），请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
                 else:
