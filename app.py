@@ -100,32 +100,41 @@ if ai_contents:
         value="请帮我提取并整理出这几页文件中的关键信息：\n1. 文件的基本主题是什么？\n2. 关键日期（什么时候到期/截止）？\n3. 核心地点或地址？\n4. 联络方式（电话/邮箱/联系人）？"
     )
 
-    if st.button("🚀 开始 AI 深度分析", type="primary"):
+       if st.button("🚀 开始 AI 深度分析", type="primary"):
         with st.spinner("AI 正在深度分析中，请稍候..."):
-            try:
-                # 正常使用当前钥匙发起分析
-                final_inputs = [*ai_contents, user_prompt]
-                response = client.models.generate_content(
-                    model='gemini-3.6-flash',
-                    contents=final_inputs
-                )
-                st.session_state["analysis_result"] = response.text
-                
-            except Exception as e:
-                # 🌟 终极修复：如果遇到 429 限流，直接强行切匙并瞬间重载网页，不走后台默默重试的死缓存
-                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
-                    if len(clients) > 1:
-                        st.session_state["key_index"] += 1  # 后台指针加 1，切换到备用钥匙
-                        st.warning("⚠️ 当前钥匙按得太快被谷歌限流了！App 已自动无缝切到【下一把备用钥匙】！")
-                        st.info("🔄 网页正在自动重载环境，请在重载完成后，重新点击一次【🚀 开始 AI 深度分析】即可瞬间通过！")
-                        st.rerun()  # 强行命令整个网页彻底刷新，洗干净缓存！
+            final_inputs = [*ai_contents, user_prompt]
+            success = False
+            
+            # ✨ 终极黑科技：直接在后台使用平滑循环，一口气轮流测试你配好的所有钥匙！
+            # 无论哪把钥匙卡住，绝对不会刷新网页，保证你上传的文件100%安全留着！
+            for attempt in range(len(clients)):
+                # 动态挑选出当前轮次要尝试的钥匙
+                current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
+                try:
+                    response = current_client.models.generate_content(
+                        model='gemini-3.6-flash',
+                        contents=final_inputs
+                    )
+                    st.session_state["analysis_result"] = response.text
+                    success = True
+                    
+                    # 💡 如果这把钥匙成功了，顺手更新一下全局指针，让下次默认就用这把好用的钥匙
+                    st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
+                    break  # 成功拿到报告，立刻跳出循环，去第四步渲染界面
+                    
+                except Exception as e:
+                    # 如果撞到了 429 频率超限，默默在后台记录，并直接允许循环进入下一把钥匙尝试！
+                    if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                        if attempt < len(clients) - 1:
+                            continue  # 后面还有备用钥匙，不报错，直接去试下一把！
+                        else:
+                            st.error("⚠️ 抱歉，您配好的所有备用钥匙在这一分钟内都按得太频繁被限流了，请您在手机前静静等待 20 秒后再次点击分析即可！")
+                    elif "503" in str(e) or "UNAVAILABLE" in str(e):
+                        st.error("⚠️ 谷歌 AI 服务器刚才临时繁忙，请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
                     else:
-                        st.error("⚠️ 当前钥匙按得太急被谷歌限流了，请静静等待 20 秒后重新点击分析即可！")
-                        
-                elif "503" in str(e) or "UNAVAILABLE" in str(e):
-                    st.error("⚠️ 谷歌 AI 服务器刚才临时繁忙，请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
-                else:
-                    st.error(f"分析失败: {str(e)}")
+                        st.error(f"分析失败: {str(e)}")
+                        break
+
 # ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（免滞后锁流版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
