@@ -100,7 +100,7 @@ if ai_contents:
         value="请帮我提取并整理出这几页文件中的关键信息：\n1. 文件的基本主题是什么？\n2. 关键日期（什么时候到期/截止）？\n3. 核心地点或地址？\n4. 联络方式（电话/邮箱/联系人）？"
     )
 
-       if st.button("🚀 开始 AI 深度分析", type="primary"):
+    if st.button("🚀 开始 AI 深度分析", type="primary"):
         with st.spinner("AI 正在深度分析中，请稍候..."):
             final_inputs = [*ai_contents, user_prompt]
             success = False
