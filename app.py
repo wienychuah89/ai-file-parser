@@ -197,7 +197,7 @@ if ai_contents:
                 try:
                     # 使用标准 flash 模型降低 Quota 消耗
                     response = current_client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-3.6-flash',
                         contents=final_inputs
                     )
                     st.session_state["analysis_result"] = response.text
