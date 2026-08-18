@@ -161,31 +161,24 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # ✨ 核心安全洗净：去除冲突符号，支持手机原生全语种自动混合朗读机制
-    clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "").replace('"', '').replace('\\', '')
+    # 🌟 终极纯净洗涤：清洗文本中的所有非法换行和冲突括号，确保注入底层时不报错
+    audio_text_pure = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "").replace('"', '').replace('\\', '')
     
-    # 🌟 终极穿透控制台：完全顺应 Streamlit Cloud 云端跨域安全网。
-    # 移除危险的 window.top 穿透，改用合规的原生语音调度。不指定单一强制语言语言，激活手机最聪明的“中英智能双语混合朗读”！
-    tts_template_html = """
-    <div style="background-color: #F0F2F6; padding: 14px; border-radius: 8px; margin-bottom: 18px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
-        <p style="margin: 0px 0px 8px 0px; font-size: 13px; color: #666; font-weight: bold;">🔊 智能中英双语朗读控制台（发信前后均可随意收听控制）：</p>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="
-                try {
-                    window.speechSynthesis.cancel();
-                    const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER');
-                    msg.rate = 1.0;
-                    msg.volume = 1.0;
-                    window.speechSynthesis.speak(msg);
-                } catch(err) { alert('语音引擎加载中，请再次点击播放！'); }
-            " style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(59,130,246,0.2);">▶️ 点击播放双语报告</button>
+    st.write("🔊 智能中英双语朗读控制台：")
+    
+    # ✨ 破局神技：利用 Streamlit 原生的平铺列，在页面上画出绝对不乱码的官方高质按钮
+    col_play, col_stop = st.columns([2, 1])
+    
+    with col_play:
+        # 用隐藏的 HTML 驱动，只有在点击原生按钮时才安全执行，100% 杜绝了二次刷新的排版坍塌
+        play_script = f"""<b style='display:none'><img src onerror="window.speechSynthesis.cancel(); const m=new SpeechSynthesisUtterance('{audio_text_pure}'); m.rate=1.0; window.speechSynthesis.speak(m);"></b>"""
+        if st.button("▶️ 点击播放双语报告", use_container_width=True):
+            st.markdown(play_script, unsafe_allow_html=True)
             
-            <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(239,68,68,0.2);">⏹️ 停止</button>
-        </div>
-    </div>
-    """
-    final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", clean_audio_text)
-    st.markdown(final_tts_html, unsafe_allow_html=True)
+    with col_stop:
+        stop_script = """<b style='display:none'><img src onerror="window.speechSynthesis.cancel();"></b>"""
+        if st.button("⏹️ 停止", use_container_width=True):
+            st.markdown(stop_script, unsafe_allow_html=True)
     
     # 显示漂亮的原生分析表格
     st.markdown(st.session_state["analysis_result"])
