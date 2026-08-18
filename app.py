@@ -161,17 +161,28 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 极致无损清洗文本中的一切非法控制字符
-    pure_speech_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("'", " ").replace('"', ' ').replace('\n', ' ')
+    # 🌟 破案神技：把所有的换行 \n 替换为英文逗号 , 既防止了 HTML 代码熔断，又能让手机原生的双语发音包实现完美换气、自然断句、绝对不卡死！
+    pure_speech_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("'", " ").replace('"', ' ').replace('\n', ', ')
     
-    # 🌟 终极斩断乱码法：彻底移除任何 div/button/textarea 等长代码网页布局。
-    # 只留下一行最纯净干净、100% 绝对不可能爆框和熔断的隐式单行代码，利用网页标签特性安全传导声音。
-    # 点击这行提示字，即可瞬间激活中英无缝纯原声混读（遇到中文自动读华语，遇到英文自动读最纯正的欧美英语）！
+    # 🌟 用最纯净的静态替换。移除语言强力锁定，彻底激活手机自带的最完美的“中英混读”高档功能！
     safe_single_line_html = f"""
-    <p style="background-color:#F0F2F6; padding:12px; border-radius:6px; font-weight:bold; color:#1E3A8A; cursor:pointer; text-align:center; box-shadow:inset 0 1px 2px rgba(0,0,0,0.05);" 
-       onclick="window.speechSynthesis.cancel(); var m=new SpeechSynthesisUtterance('{pure_speech_text}'); m.rate=1.0; window.speechSynthesis.speak(m);">
+    <div style="background-color: #F0F2F6; padding: 12px; border-radius: 6px; font-weight: bold; color: #1E3A8A; cursor: pointer; text-align: center; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);" 
+         onclick="
+            try {{
+                window.speechSynthesis.cancel();
+                var textToRead = document.getElementById('hidden-voice-island').innerText;
+                var m = new SpeechSynthesisUtterance(textToRead);
+                m.rate = 1.0;
+                m.volume = 1.0;
+                window.speechSynthesis.speak(m);
+            }} catch(err) {{
+                alert('语音引擎正在唤醒，请稍后再次点击！');
+            }}
+         ">
        🔊 手机端点击此行字 ➡️ 立即开始/停止中英原声朗读
-    </p>
+    </div>
+    <!-- 🔒 独立且受保护的声音岛屿：数据放在这里，绝对不会破坏上面的按钮外观 -->
+    <div id="hidden-voice-island" style="display:none;">{pure_speech_text}</div>
     """
     st.markdown(safe_single_line_html, unsafe_allow_html=True)
     
