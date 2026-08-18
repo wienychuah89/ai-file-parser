@@ -168,11 +168,40 @@ if ai_contents:
 # ================= 🟢 第四步：一键复制与 WhatsApp 终极分享 =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
+
+    # 🌟 极速安全处理：清洗 Markdown 符号，把内容转化为纯净的语音流文本
+    clean_audio_text = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "\\'").replace('"', '\\"')
+    
+    # 🔊 嵌入原生 HTML5 语音朗读控制区域（随点随读，发信前后均能完美独立响应）
+    tts_html = f"""
+    <div style="background-color: #F0F2F6; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 10px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
+        <button onclick="
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance('{clean_audio_text}');
+            msg.lang = 'zh-CN';
+            msg.rate = 1.0;
+            window.speechSynthesis.speak(msg);
+        " style="
+            flex: 2; background-color: #3B82F6; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;
+        ">🔊 点击播放语音报告</button>
+        
+        <button onclick="
+            window.speechSynthesis.cancel();
+        " style="
+            flex: 1; background-color: #EF4444; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px;
+        ">🔇 停止</button>
+    </div>
+    """
+    st.markdown(tts_html, unsafe_allow_html=True)
+
+
+
+    
     st.markdown(st.session_state["analysis_result"])
     
     st.divider()
     st.subheader("📲 结果快捷分享")
-    
+
     st.write("📋 步骤一：点击下方按钮，将分析报告真正复制到您的手机剪贴板中。")
     
     from st_copy_to_clipboard import st_copy_to_clipboard
