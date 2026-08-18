@@ -52,9 +52,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # ================= 🔒 第一步：智能防刷新密码锁 =================
-PASSWORD = "112234455"  # 👈 保持你之前的密码不变
+# 从环境变量中读取密码，不再明文写在代码里
+PASSWORD = st.secrets.get("APP_PASSWORD", "112234455") 
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -67,8 +67,7 @@ if not st.session_state["authenticated"]:
     elif user_password:
         st.error("密码错误，拒绝访问！")
     st.stop()
-# ====================================================
-
+# =============================================================
 
 if not st.session_state.authenticated:
     st.title("系统登录")
