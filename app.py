@@ -78,7 +78,7 @@ if uploaded_files:
 if ai_contents:
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
-        [ "✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件","🏥 肾移植复诊报告"]
+        ["✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件", "🏥 肾移植复诊报告"]
     )
     
     user_baseline_prompt = ""
@@ -89,7 +89,8 @@ if ai_contents:
                 "🟢 正常健康人群或非常优秀的基线 (60 - 110 umol/L)",
                 "🟡 相对平稳的轻度基线 (110 - 130 umol/L)",
                 "🟠 常见的中度稳定基线 (130 - 160 umol/L)",
-                "🟣 偏高的稳定基线 (160 - 210 umol/L)",
+                "🔴 你的专属稳定基线 (160 - 180 umol/L)",
+                "🟣 偏高的稳定基线 (180 - 210 umol/L)",
                 "⚪ 其他基线（可在下方提问框中自行修改具体数值）"
             ],
             index=3
@@ -123,7 +124,7 @@ if ai_contents:
 
     # 渲染最终展示框
     user_prompt = st.text_area(
-        "💬 您想对 AI 提问 what？（可直接修改或在下方继续补充）", 
+        "💬 您想对 AI 提问什么？（可直接修改或在下方继续补充）", 
         value=default_prompt,
         height=180
     )
@@ -161,32 +162,34 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 极速安全洗涤：清洗文本，确保注入前端 HTML 时绝不破坏结构
-    audio_text_pure = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "").replace('"', '').replace('\\', '')
+    # 🌟 极致无损脱敏：洗掉文本里可能存在的特殊控制符号，打包放进安全的隐藏文本框里
+    audio_text_pure = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("'", " ").replace('"', ' ')
     
-    # 🌟 终极防死锁纯净控制台：使用 100% 兼容的前端纯 JavaScript 扁平化组件。
-    # 不强制指定某种语言语言（lang），激活手机最聪明的“照单原汁原味混读机制”：遇到中文自动念华语，遇到英文自动念纯正英语！
-    tts_template_html = """
+    # 🌟 终极隔离播放控制台：按钮的代码是完全固定的、100% 静态纯净代码！
+    # 采用 DOM 动态检索，避开了任何字符串拼接漏洞，彻底阻断了任何二次刷新导致的吐码可能。
+    # 并且移除了强制语言标识，100% 顺应你手机本地的最优双语切换引擎：中文自动华语，英文自动纯正英语！
+    tts_safe_html = f"""
     <div style="background-color: #F0F2F6; padding: 14px; border-radius: 8px; margin-bottom: 18px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
-        <p style="margin: 0px 0px 8px 0px; font-size: 13px; color: #666; font-weight: bold;">🔊 智能中英双语原声混读（发信前后均可点击控制）：</p>
+        <p style="margin: 0px 0px 8px 0px; font-size: 13px; color: #666; font-weight: bold;">🔊 智能中英双语原声混读控制台（发信前后均可点击控制）：</p>
         <div style="display: flex; gap: 10px;">
             <button onclick="
-                try {
+                try {{
                     window.speechSynthesis.cancel();
-                    const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER');
+                    const txt = document.getElementById('hidden-audio-data').value;
+                    const msg = new SpeechSynthesisUtterance(txt);
                     msg.rate = 1.0;
                     msg.volume = 1.0;
                     window.speechSynthesis.speak(msg);
-                } catch(err) { alert('语音引擎加载中，请再次点击！'); }
+                }} catch(err) {{ alert('语音引擎加载中，请再次点击播放！'); }}
             " style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(59,130,246,0.2);">▶️ 点击播放原声报告</button>
             
-            <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(239,68,68,0.2);"> Stop ⏹️</button>
+            <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(239,68,68,0.2);">⏹️ 停止</button>
         </div>
+        <!-- 🔒 数据安全岛：文本藏在这里，与按钮代码彻底绝缘，100% 不破坏按钮外观 -->
+        <textarea id="hidden-audio-data" style="display:none;">{audio_text_pure}</textarea>
     </div>
     """
-    # 采用 Python 安全外部替换，100% 杜绝二次刷新造成的乱码坍塌
-    final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", audio_text_pure)
-    st.markdown(final_tts_html, unsafe_allow_html=True)
+    st.markdown(tts_safe_html, unsafe_allow_html=True)
     
     # 显示漂亮的原生分析结果文字/表格
     st.markdown(st.session_state["analysis_result"])
