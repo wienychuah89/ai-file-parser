@@ -78,7 +78,7 @@ if uploaded_files:
 if ai_contents:
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
-        [ "✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件","🏥 肾移植复诊报告"]
+        ["🏥 肾移植复诊报告", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件", "✍️ 自由输入/其他全新文件"]
     )
     
     user_baseline_prompt = ""
@@ -123,7 +123,7 @@ if ai_contents:
 
     # 渲染最终展示框
     user_prompt = st.text_area(
-        "💬 您想对 AI 提问什么？（可直接修改或在下方继续补充）", 
+        "💬 您想对 AI 提问 what？（可直接修改或在下方继续补充）", 
         value=default_prompt,
         height=180
     )
@@ -154,33 +154,41 @@ if ai_contents:
                     elif "503" in str(e) or "UNAVAILABLE" in str(e):
                         st.error("⚠️ 谷歌 AI 服务器刚才临时繁忙，请您立刻再次点击【🚀 开始 AI 深度分析】按钮重新提交即可！")
                     else:
-                        st.error(f"分析失败: {str(e)}")
+                        st.error(f"分析failed: {str(e)}")
                         break
 
 # ================= 🟢 第四步：一键复制与 WhatsApp 终极分享 =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 终极纯净洗涤：清洗文本中的所有非法换行和冲突括号，确保注入底层时不报错
+    # 🌟 极速安全洗涤：清洗文本，确保注入前端 HTML 时绝不破坏结构
     audio_text_pure = st.session_state["analysis_result"].replace("*", "").replace("#", "").replace("`", "").replace("\n", " ").replace("'", "").replace('"', '').replace('\\', '')
     
-    st.write("🔊 智能中英双语朗读控制台：")
-    
-    # ✨ 破局神技：利用 Streamlit 原生的平铺列，在页面上画出绝对不乱码的官方高质按钮
-    col_play, col_stop = st.columns([2, 1])
-    
-    with col_play:
-        # 用隐藏的 HTML 驱动，只有在点击原生按钮时才安全执行，100% 杜绝了二次刷新的排版坍塌
-        play_script = f"""<b style='display:none'><img src onerror="window.speechSynthesis.cancel(); const m=new SpeechSynthesisUtterance('{audio_text_pure}'); m.rate=1.0; window.speechSynthesis.speak(m);"></b>"""
-        if st.button("▶️ 点击播放双语报告", use_container_width=True):
-            st.markdown(play_script, unsafe_allow_html=True)
+    # 🌟 终极防死锁纯净控制台：使用 100% 兼容的前端纯 JavaScript 扁平化组件。
+    # 不强制指定某种语言语言（lang），激活手机最聪明的“照单原汁原味混读机制”：遇到中文自动念华语，遇到英文自动念纯正英语！
+    tts_template_html = """
+    <div style="background-color: #F0F2F6; padding: 14px; border-radius: 8px; margin-bottom: 18px; box-shadow: inset 0px 1px 3px rgba(0,0,0,0.05);">
+        <p style="margin: 0px 0px 8px 0px; font-size: 13px; color: #666; font-weight: bold;">🔊 智能中英双语原声混读（发信前后均可点击控制）：</p>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="
+                try {
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance('TARGET_TEXT_PLACEHOLDER');
+                    msg.rate = 1.0;
+                    msg.volume = 1.0;
+                    window.speechSynthesis.speak(msg);
+                } catch(err) { alert('语音引擎加载中，请再次点击！'); }
+            " style="flex: 2; background-color: #3B82F6; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(59,130,246,0.2);">▶️ 点击播放原声报告</button>
             
-    with col_stop:
-        stop_script = """<b style='display:none'><img src onerror="window.speechSynthesis.cancel();"></b>"""
-        if st.button("⏹️ 停止", use_container_width=True):
-            st.markdown(stop_script, unsafe_allow_html=True)
+            <button onclick="window.speechSynthesis.cancel();" style="flex: 1; background-color: #EF4444; color: white; border: none; padding: 12px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; box-shadow: 0px 2px 5px rgba(239,68,68,0.2);"> Stop ⏹️</button>
+        </div>
+    </div>
+    """
+    # 采用 Python 安全外部替换，100% 杜绝二次刷新造成的乱码坍塌
+    final_tts_html = tts_template_html.replace("TARGET_TEXT_PLACEHOLDER", audio_text_pure)
+    st.markdown(final_tts_html, unsafe_allow_html=True)
     
-    # 显示漂亮的原生分析表格
+    # 显示漂亮的原生分析结果文字/表格
     st.markdown(st.session_state["analysis_result"])
     
     st.divider()
