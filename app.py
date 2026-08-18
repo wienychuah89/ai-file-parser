@@ -176,7 +176,7 @@ if ai_contents:
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     
-    # 🌟 终极安全进化：利用官方原生高权多媒体组件，100% 击穿所有手机系统的静音和跨域拦截！
+    # 🌟 官方原生高权多媒体组件（100% 成功出声）
     if "audio_bytes" in st.session_state:
         st.write("🎵 点击左侧【▶️ 播放】键，即可直接收听由 AI 为您实时生成的普通话声音报告：")
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
@@ -186,32 +186,33 @@ if "analysis_result" in st.session_state:
     st.markdown(st.session_state["analysis_result"])
     
     st.divider()
-    st.subheader("📲 结果快捷分享")
+    st.subheader("📲 结果快捷分享通道")
     
-    st.write("📋 步骤一：点击下方按钮，将分析报告真正复制到您的手机剪贴板中。")
-    
-    from st_copy_to_clipboard import st_copy_to_clipboard
-    st_copy_to_clipboard(
-        st.session_state["analysis_result"], 
-        before_copy_label="📋 点击此处 ➡️ 真正一键复制 AI 分析结果", 
-        after_copy_label="🎉 真正复制成功！请放心前往 WhatsApp 粘贴发送！"
-    )
-    
-    st.write("")
-    
+    # 🌟 流程大优化：把【锁号码】的动作提到最前面，防止先复制后锁号码导致剪贴板被冲刷！
     with st.form("whatsapp_form", clear_on_submit=False):
-        st.info("💡 步骤二：在下方输入接收人电话，并点击【🔒 锁定号码并生成通道】按钮：")
+        st.info("💡 步骤一：请先在下方输入接收人电话，并点击【🔒 锁定号码并生成绿色通道】按钮：")
         target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):", value="")
-        lock_button = st.form_submit_button("🔒 步骤二：锁定号码并生成通道", use_container_width=True)
+        lock_button = st.form_submit_button("🔒 步骤一：锁定号码并生成绿色通道", use_container_width=True)
         
         if lock_button:
             clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
             if clean_phone:
                 st.session_state["wa_url"] = f"https://wa.me/{clean_phone}"
-                st.success(f"✅ 号码 {clean_phone} 锁定成功！直达链接已在下方为您准备就绪👇")
+                st.success(f"✅ 号码 {clean_phone} 锁定成功！请继续完成下方步骤二和步骤三👇")
             else:
                 st.session_state["wa_url"] = "https://wa.me/"
-                st.success("✅ 已锁定为空号模式！直达链接已在下方为您准备就绪👇")
+                st.success("✅ 已锁定为空号模式！请继续完成下方步骤二和步骤三👇")
+
+    # 只有当用户锁定完号码后，才依次亮起复制和真正的跳转按钮，顺理成章、万无一失！
+    st.write("")
+    st.write("📋 步骤二：点击下方按钮，将上方的分析报告真正复制到您的手机剪贴板中：")
+    
+    from st_copy_to_clipboard import st_copy_to_clipboard
+    st_copy_to_clipboard(
+        st.session_state["analysis_result"], 
+        before_copy_label="📋 步骤二：点击此处 ➡️ 真正一键复制 AI 分析结果", 
+        after_copy_label="🎉 真正复制成功！请放心前往下方步骤三粘贴发送！"
+    )
 
     if "wa_url" in st.session_state:
         whatsapp_btn_html = f"""
@@ -226,7 +227,7 @@ if "analysis_result" in st.session_state:
             font-weight: bold; 
             text-decoration: none; 
             border-radius: 8px; 
-            margin-top: 15px; 
+            margin-top: 25px; 
             box-shadow: 0px 4px 10px rgba(37,211,102,0.3);
         ">🟢 步骤三：点击前往 WhatsApp 软件（进去后长按粘贴）</a>
         """
