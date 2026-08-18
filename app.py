@@ -7,7 +7,7 @@ import urllib.parse
 st.set_page_config(page_title="AI 文件分析助手", layout="centered")
 
 # ================= 🔒 第一步：智能防刷新密码锁 =================
-PASSWORD = "你的自定义密码123"  # 👈 保持你之前的密码不变
+PASSWORD = "cwnpea6125"  # 👈 保持你之前的密码不变
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
