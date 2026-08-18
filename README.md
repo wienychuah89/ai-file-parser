@@ -2,16 +2,6 @@
 
 一款基于 **Streamlit** 与 **Google Gemini 多模态大模型** 构建的智能文件深度分析工具。支持图片与 PDF 批量解析、针对性业务模板提取、中英双语语音报告生成（TTS），并提供一键 WhatsApp 快捷分享通道。
 
-## 主要页面
-<img width="629" height="853" alt="image" src="https://github.com/user-attachments/assets/c7785758-5963-46a9-b4f5-af705923d789" />
-
-## 结果
-<img width="638" height="866" alt="image" src="https://github.com/user-attachments/assets/b6bef2a6-962c-4c9a-af21-732f55e6ae9e" />
-
-## 信息发送
-
-<img width="639" height="610" alt="image" src="https://github.com/user-attachments/assets/48012cee-3526-4ef5-aab3-f923f2551648" />
-
 ---
 
 ## ✨ 核心特性
@@ -28,6 +18,18 @@
 - 📲 **WhatsApp 快捷联动**：
   - **文本模式**：一键复制分析结果，配合安全脚本自动清空旧剪贴板残留，直达 WhatsApp 粘贴。
   - **语音模式**：支持一键下载高保真 MP3 报告并通过 WhatsApp 附件快速发送。
+
+---
+
+## 主要页面
+<img width="629" height="853" alt="image" src="https://github.com/user-attachments/assets/c7785758-5963-46a9-b4f5-af705923d789" />
+
+## 结果
+<img width="638" height="866" alt="image" src="https://github.com/user-attachments/assets/b6bef2a6-962c-4c9a-af21-732f55e6ae9e" />
+
+## 信息发送
+
+<img width="644" height="610" alt="image" src="https://github.com/user-attachments/assets/ebef0205-75d7-4fc6-afb8-494c6b911e63" />
 
 ---
 
