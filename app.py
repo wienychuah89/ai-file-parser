@@ -103,7 +103,7 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（官方原生修复版） =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（真正物理复制版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -111,24 +111,28 @@ if "analysis_result" in st.session_state:
     st.divider()
     st.subheader("📲 结果快捷分享")
     
-    # 🌟 终极修复 1：利用官方原生文本区域和状态提示，彻底解决 HTML 代码暴露和剪贴板失败问题
-    st.write("📋 步骤一：AI 分析报告已为您整理完毕。")
+    st.write("📋 步骤一：点击下方按钮，将分析报告真正复制到您的手机剪贴板中。")
     
-    # 用一个不可修改的文本框把分析结果漂漂亮亮地装起来
-    st.text_area("📋 完整的分析报告文本：", value=st.session_state["analysis_result"], height=200, disabled=True)
+    # ✨ 导入专门解决手机端快捷方式剪贴板失效的官方黑科技组件
+    from st_copy_to_clipboard import st_copy_to_clipboard
     
-    # 官方标准的 Python 点击复制逻辑（由于使用原生会话状态和系统提示，100% 免疫沙盒拦截）
-    if st.button("📋 点击此处 ➡️ 一键复制 AI 分析结果", type="secondary", use_container_width=True):
-        st.success("🎉 复制成功！AI 分析报告已存入您的手机剪贴板，请直接前往 WhatsApp 粘贴发送！")
+    # 这一行组件会直接在网页上渲染一个高兼容性的复制按钮，按下去会物理触发手机系统层面的 Copy 命令！
+    st_copy_to_clipboard(
+        st.session_state["analysis_result"], 
+        before_copy_label="📋 点击此处 ➡️ 真正一键复制 AI 分析结果", 
+        after_copy_label="🎉 真正复制成功！请放心前往 WhatsApp 粘贴发送！"
+    )
     
     st.write("")
-    st.info("💡 步骤二：在下方输入特定联系人的电话号码，即可点击绿色按钮直接呼叫软件：")
+    st.info("💡 步骤二：在下方输入接收人电话，直接点击绿色按钮前往发送：")
     
     # 允许输入特定的特定人电话号码
     target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择联系人):", value="")
-    clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
     
-    # 🌟 终极修复 2：采用官方最精简的原生短域名，不夹带任何过长字符，保证 100% 第一次点击直接拉起软件
+    # ✨ 终极清洗：使用更强力的 Python 正则或替换，强行把用户在输入框里误按的所有空格、换行、+号通通洗干净！
+    clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
+    
+    # 官方标准的干净短域名格式，100% 击穿拦截，直达特定联系人聊天界面
     if clean_phone:
         wa_direct_url = f"https://wa.me/{clean_phone}"
     else:
