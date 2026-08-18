@@ -73,6 +73,8 @@ if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"].strip():
     clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY"].strip()))
 if "GEMINI_API_KEY_BACKUP" in st.secrets and st.secrets["GEMINI_API_KEY_BACKUP"].strip():
     clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY_BACKUP"].strip()))
+if "GEMINI_API_KEY_TRIPLE" in st.secrets and st.secrets["GEMINI_API_KEY_TRIPLE"].strip():
+    clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY_TRIPLE"].strip()))
 
 if not clients:
     st.warning("⚠️ 请先在 Streamlit Secrets 中配置 GEMINI_API_KEY")
