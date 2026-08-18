@@ -1,3 +1,4 @@
 google-genai
 pillow
 pypdf
+st-copy-to-clipboard
