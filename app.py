@@ -103,7 +103,7 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 突围分享版 =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 突围分享版（官方原生修复版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -111,58 +111,39 @@ if "analysis_result" in st.session_state:
     st.divider()
     st.subheader("📲 结果快捷分享")
     
-    # 清洗和准备分析文本，防止特殊字符引发解析错乱
-    raw_text = st.session_state["analysis_result"]
-    clean_js_text = raw_text.replace("`", "\\`").replace("$", "\\$")
-    
-    # 🌟 黑科技 1：利用纯 HTML+JS 的 clipboard API 制作 100% 免疫拦截的一键复制大按钮
-    copy_btn_html = f"""
-    <script>
-    function copyToClipboard() {{
-        const text = `{clean_js_text}`;
-        navigator.clipboard.writeText(text).then(function() {{
-            alert("📋 提示：分析报告已完美复制到您的手机剪贴板！请直接去 WhatsApp 粘贴发送！");
-        }}, function(err) {{
-            alert("复制失败: ", err);
-        }});
-    }}
-    </script>
-    <button onclick="copyToClipboard();" style="
-        display: block;
-        width: 100%;
-        text-align: center;
-        background-color: #3B82F6;
-        color: white;
-        padding: 12px 0px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-        border-radius: 8px;
-        margin-top: 10px;
-        cursor: pointer;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-    ">📋 一键复制 AI 分析结果</button>
-    """
-    st.markdown(copy_btn_html, unsafe_allow_html=True)
+    # ✨ 终极修复：使用 Streamlit 官方最标准的 st.code 组件
+    # 它会在手机界面上渲染一个漂亮的文本框，并且右上角【自动自带官方一键复制按钮】
+    # 手机用户轻轻一按右上角图标即可完美复制，100% 免疫任何系统拦截，界面绝不吐代码！
+    st.write("📋 提示：请点击下方文本框【右上角的双正方形图标】即可一键复制完整分析报告！")
+    st.code(st.session_state["analysis_result"], language="markdown")
     
     st.write("")
-    st.info("💡 复制成功后，您可以点击下方官方直达通道，手动粘贴给您的联系人：")
+    st.info("💡 复制成功后，您可以选择在下方输入接收人电话，直接跳转去 WhatsApp 粘贴发送：")
     
     # 允许输入特定的特定人电话号码
     target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择):", value="")
     clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
     
     if clean_phone:
-        wa_direct_url = f"https://wa.me/{clean_phone}"
+        wa_direct_url = f"https://wa.me{clean_phone}"
     else:
-        wa_direct_url = "https://wa.me/"
+        wa_direct_url = "https://wa.me"
         
-    # 🌟 黑科技 2：这是官方最标准的无参数原生域名，安卓独立快捷方式壳不会拦截这一类静态锚点链接！
-    st.markdown(
-        f'<a href="{wa_direct_url}" target="_blank" style="'
-        'display: block; width: 100%; text-align: center; background-color: #25D366; '
-        'color: white; padding: 12px 0px; font-size: 16px; font-weight: bold; '
-        'text-decoration: none; border-radius: 8px; margin-top: 5px; '
-        'box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">🟢 前往 WhatsApp 软件</a>',
-        unsafe_allow_html=True
-    )
+    # ✨ 官方最标准的无参数原生域名超链接，安卓快捷方式外壳 100% 不会拦截这一类静态锚点链接！
+    whatsapp_btn_html = f"""
+    <a href="{wa_direct_url}" target="_blank" style="
+        display: block; 
+        width: 100%; 
+        text-align: center; 
+        background-color: #25D366; 
+        color: white; 
+        padding: 12px 0px; 
+        font-size: 16px; 
+        font-weight: bold; 
+        text-decoration: none; 
+        border-radius: 8px; 
+        margin-top: 5px; 
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+    ">🟢 前往 WhatsApp 软件</a>
+    """
+    st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
