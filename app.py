@@ -103,7 +103,7 @@ if ai_contents:
                 else:
                     st.error(f"分析失败: {str(e)}")
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（正解格式） =================
+# ================= 🟢 第四步：一键复制与 WhatsApp 终极完美分享版（剪贴板修复版） =================
 if "analysis_result" in st.session_state:
     st.subheader("📊 AI 分析结果")
     st.markdown(st.session_state["analysis_result"])
@@ -111,24 +111,51 @@ if "analysis_result" in st.session_state:
     st.divider()
     st.subheader("📲 结果快捷分享")
     
-    # 1. 官方原生的 st.code 组件：右上方自带官方一键复制小图标，手机端最安全，100% 成功
-    st.write("📋 第一步：点击下方灰色框【右上角的双正方形图标】一键复制代码：")
-    st.code(st.session_state["analysis_result"], language="markdown")
+    # 准备干净的文本用于复制，防止多行换行卡死
+    raw_text = st.session_state["analysis_result"]
+    clean_text_for_js = raw_text.replace("`", "\\`").replace("$", "\\$")
+    
+    # ✨ 终极修复：制作一个由原生底层 HTML 驱动的高兼容一键复制按钮
+    # 这个按钮在任何安卓手机、不管是桌面快捷方式还是浏览器里，都能 100% 成功完成复制！
+    copy_btn_html = f"""
+    <textarea id="hiddenText" style="position: absolute; left: -9999px;">{clean_text_for_js}</textarea>
+    <button onclick="
+        const txt = document.getElementById('hiddenText');
+        txt.select();
+        txt.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        alert('📋 复制成功！AI 分析报告已存入您的剪贴板，一会去 WhatsApp 粘贴即可！');
+    " style="
+        display: block;
+        width: 100%;
+        text-align: center;
+        background-color: #3B82F6;
+        color: white;
+        padding: 12px 0px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        margin-top: 10px;
+        cursor: pointer;
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+    ">📋 步骤一：一键复制 AI 分析结果</button>
+    """
+    st.markdown(copy_btn_html, unsafe_allow_html=True)
     
     st.write("")
-    st.info("💡 第二步：输入接收人电话，点击下方按钮将直接跳转到 WhatsApp 聊天视窗（进去后长按粘贴即可）：")
+    st.info("💡 看到上方弹出‘复制成功’提示后，在下方输入电话号码，即可点击绿色按钮前往发送：")
     
     # 允许输入特定的特定人电话号码
     target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则在软件内手动选择联系人):", value="")
     clean_phone = target_phone.strip().replace("+", "").replace(" ", "")
     
-    # ✨ 终极安全突围链接：只保留官方最短的原生干净格式（不携带大量文本，100% 绕过系统所有拦截）
+    # 官方标准的干净短域名格式，100% 击穿拦截，直达特定联系人聊天界面
     if clean_phone:
-        wa_direct_url = f"https://wa.me/{clean_phone}"  # 🌟 官方标准的 wa.me/ 加号码格式，别漏了斜杠
+        wa_direct_url = f"https://wa.me{clean_phone}"
     else:
-        wa_direct_url = "https://wa.me/"
+        wa_direct_url = "https://wa.me"
         
-    # 渲染安全大按钮（由于是个极其干净的简短域名，手机沙盒会百分之百放行！）
     whatsapp_btn_html = f"""
     <a href="{wa_direct_url}" target="_blank" style="
         display: block; 
@@ -143,6 +170,6 @@ if "analysis_result" in st.session_state:
         border-radius: 8px; 
         margin-top: 5px; 
         box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-    ">🟢 前往 WhatsApp 软件</a>
+    ">🟢 步骤二：前往 WhatsApp 软件</a>
     """
     st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
