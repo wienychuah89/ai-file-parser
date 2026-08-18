@@ -204,10 +204,10 @@ if "analysis_result" in st.session_state:
         if lock_button:
             clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
             if clean_phone:
-                st.session_state["wa_url"] = f"https://wa.me{clean_phone}"
+                st.session_state["wa_url"] = f"https://wa.me/{clean_phone}"
                 st.success(f"✅ 号码 {clean_phone} 锁定成功！直达链接已在下方为您准备就绪👇")
             else:
-                st.session_state["wa_url"] = "https://wa.me"
+                st.session_state["wa_url"] = "https://wa.me/"
                 st.success("✅ 已锁定为空号模式！直达链接已在下方为您准备就绪👇")
 
     if "wa_url" in st.session_state:
