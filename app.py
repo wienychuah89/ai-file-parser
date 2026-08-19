@@ -46,6 +46,10 @@ LANG_DICT = {
         "reg_success": "🎉 注册成功！已为您自动登录。",
         "quota_label": "今日剩余可用额度：",
         "quota_exhausted": "⚠️ 您今日的免费额度已用尽！请明日再来，或联系客服开通无限次通道。",
+        "vip_card_title": "💎 升级 VIP 享受无限次极速分析：",
+        "vip_card_desc": "限时特惠仅需 <b>RM 5.90 / 月</b>（每天 50 次深度分析 + 批量导出 Excel）。",
+        "vip_btn_text": "📲 点击联系 WhatsApp 客服开通充值",
+        "wa_msg_template": "你好！我想为账号【{}】充值额度 / 开通 VIP。",
         "phone_tip": "⚠️ 手机端温馨提示：为防止手机直接拍照导致网页刷新，建议您【先用手机相机拍好文件】，再点击下方按钮前往【相册】选取上传！",
         "upload_label": "📷 选择单张或多张文件/发票（支持单次多选）",
         "read_success": "已成功读取 {} 个文件！",
@@ -95,11 +99,6 @@ LANG_DICT = {
         "sheet2_col2": "分类汇总金额 (RM)",
         "total_row_label": "总计 (TOTAL)",
         "total_count_label": "共 {} 张单据",
-        # ... 原有字段保持不变 ...
-        "vip_card_title": "💎 升级 VIP 享受无限次极速分析：",
-        "vip_card_desc": "限时特惠仅需 <b>RM 5.90 / 月</b>（每天 50 次深度分析 + 批量导出 Excel）。",
-        "vip_btn_text": "📲 点击联系 WhatsApp 客服开通充值",
-        "wa_msg_template": "你好！我想为账号【{}】充值额度 / 开通 VIP。",
     },
     "🇬🇧 English": {
         "app_title": "📄 AI Multi-Purpose Document & Receipt Assistant",
@@ -122,6 +121,10 @@ LANG_DICT = {
         "reg_success": "🎉 Registered successfully! Logged in automatically.",
         "quota_label": "Remaining daily quota:",
         "quota_exhausted": "⚠️ Your daily free quota is exhausted! Please return tomorrow or contact support.",
+        "vip_card_title": "💎 Upgrade to VIP for Unlimited Deep Analysis:",
+        "vip_card_desc": "Limited offer at only <b>RM 5.90 / month</b> (50 deep analyses/day + batch Excel export).",
+        "vip_btn_text": "📲 Contact WhatsApp Support to Recharge",
+        "wa_msg_template": "Hi! I would like to recharge / upgrade VIP for account [{}].",
         "phone_tip": "⚠️ Mobile Tip: To prevent camera auto-refresh, please take photos first and upload from your Photo Library!",
         "upload_label": "📷 Upload Documents / Receipts (Multiple files supported)",
         "read_success": "Successfully loaded {} files!",
@@ -171,10 +174,6 @@ LANG_DICT = {
         "sheet2_col2": "Total Amount (RM)",
         "total_row_label": "TOTAL",
         "total_count_label": "Total {} receipts",
-        "vip_card_title": "💎 Upgrade to VIP for Unlimited Deep Analysis:",
-        "vip_card_desc": "Limited offer at only <b>RM 5.90 / month</b> (50 deep analyses/day + batch Excel export).",
-        "vip_btn_text": "📲 Contact WhatsApp Support to Recharge",
-        "wa_msg_template": "Hi! I would like to recharge / upgrade VIP for account [{}].",
     },
     "🇲🇾 Bahasa Melayu": {
         "app_title": "📄 Pembantu AI Dokumen & Resit Pelbagai Guna",
@@ -197,6 +196,10 @@ LANG_DICT = {
         "reg_success": "🎉 Pendaftaran berjaya! Telah log masuk secara automatik.",
         "quota_label": "Baki kuota hari ini:",
         "quota_exhausted": "⚠️ Kuota percuma anda hari ini telah habis! Sila kembali esok.",
+        "vip_card_title": "💎 Naik Taraf ke VIP untuk Analisis Tanpa Had:",
+        "vip_card_desc": "Tawaran terhad hanya <b>RM 5.90 / bulan</b> (50 analisis/hari + eksport Excel berkelompok).",
+        "vip_btn_text": "📲 Hubungi WhatsApp Khidmat Pelanggan untuk Tambah Nilai",
+        "wa_msg_template": "Salam! Saya ingin menambah kuota / menaik taraf VIP untuk akaun [{}].",
         "phone_tip": "⚠️ Tip Telefon: Untuk elak muat semula laman web, sila tangkap gambar dahulu dan muat naik dari Galeri!",
         "upload_label": "📷 Pilih Dokumen / Resit (Boleh pilih banyak fail)",
         "read_success": "Berjaya membaca {} fail!",
@@ -246,10 +249,6 @@ LANG_DICT = {
         "sheet2_col2": "Jumlah Amaun (RM)",
         "total_row_label": "JUMLAH (TOTAL)",
         "total_count_label": "Sebanyak {} resit",
-        "vip_card_title": "💎 Naik Taraf ke VIP untuk Analisis Tanpa Had:",
-        "vip_card_desc": "Tawaran terhad hanya <b>RM 5.90 / bulan</b> (50 analisis/hari + eksport Excel berkelompok).",
-        "vip_btn_text": "📲 Hubungi WhatsApp Khidmat Pelanggan untuk Tambah Nilai",
-        "wa_msg_template": "Salam! Saya ingin menambah kuota / menaik taraf VIP untuk akaun [{}].",
     }
 }
 
@@ -344,7 +343,7 @@ if not st.session_state["authenticated"]:
     with tab_login:
         login_u = st.text_input(T["lbl_user"], key="login_username")
         login_p = st.text_input(T["lbl_pass"], type="password", key="login_password")
-        if st.button(T["btn_login"], type="primary", use_container_width=True):
+        if st.button(T["btn_login"], type="primary", use_container_width=True, key="btn_login_submit"):
             with st.spinner("..."):
                 users = get_all_users()
                 clean_u = login_u.strip()
@@ -372,7 +371,7 @@ if not st.session_state["authenticated"]:
         reg_p = st.text_input(T["reg_p_lbl"], type="password", key="reg_password")
         reg_p2 = st.text_input(T["reg_p2_lbl"], type="password", key="reg_password2")
         
-        if st.button(T["btn_register"], use_container_width=True):
+        if st.button(T["btn_register"], use_container_width=True, key="btn_register_submit"):
             clean_reg_u = reg_u.strip()
             clean_reg_p = reg_p.strip()
             if not clean_reg_u or not clean_reg_p:
@@ -429,18 +428,15 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
 def create_formatted_excel(df: pd.DataFrame, t_dict: dict) -> bytes:
     df_export = df.copy()
     
-    # 强制将税额和总金额转为浮点数
     df_export["tax_amount"] = pd.to_numeric(df_export["tax_amount"], errors="coerce").fillna(0.0)
     df_export["total_amount"] = pd.to_numeric(df_export["total_amount"], errors="coerce").fillna(0.0)
     
     tax_total = df_export["tax_amount"].sum()
     amount_total = df_export["total_amount"].sum()
     
-    # 分类汇总表
     category_summary = df_export.groupby("category")["total_amount"].sum().reset_index()
     category_summary.columns = [t_dict["sheet2_col1"], t_dict["sheet2_col2"]]
     
-    # 明细表重命名为当前选择的语言
     rename_map = {
         "date": t_dict["col_date"],
         "merchant": t_dict["col_merchant"],
@@ -592,10 +588,11 @@ if uploaded_files:
 if ai_contents:
     file_mode = st.selectbox(
         T["file_type_label"], 
-        [T["mode_receipt"], T["mode_medical"], T["mode_contract"], T["mode_custom"]]
+        [T["mode_receipt"], T["mode_medical"], T["mode_contract"], T["mode_custom"]],
+        key=f"file_mode_select_{selected_lang}"
     )
     
-    # 🌟 根据所选语言，动态匹配完全本地化的 Prompt
+    # 动态匹配提示词
     if "English" in selected_lang:
         lang_instruction = "Please respond in English."
         if file_mode == T["mode_medical"]:
@@ -670,7 +667,7 @@ if ai_contents:
         else:
             default_prompt = f"{lang_instruction}\nSila analisa dokumen ini dan ringkaskan isi utama:\n1."
 
-    else: # 中文
+    else:
         lang_instruction = "请使用简体中文回答。"
         if file_mode == T["mode_medical"]:
             default_prompt = (
@@ -690,7 +687,7 @@ if ai_contents:
                 "    \"date\": \"YYYY-MM-DD\",\n"
                 "    \"merchant\": \"Merchant Name\",\n"
                 "    \"category\": \"Category (e.g., Petrol / Dining / Repair / Office / Miscellaneous)\",\n"
-                "    \"invoice_no\": \"Receipt/Invoice No\",\n"
+                "    \"invoice_no\": \"Receipt No\",\n"
                 "    \"tax_amount\": 0.00,\n"
                 "    \"total_amount\": 0.00\n"
                 "  }\n"
@@ -710,122 +707,122 @@ if ai_contents:
     user_prompt = st.text_area(
         T["prompt_label"], 
         value=default_prompt,
-        height=160
+        height=160,
+        key=f"prompt_input_{selected_lang}_{file_mode}"
     )
-    if st.button(T["btn_start_analysis"], type="primary", use_container_width=True):
-        # 🌟 1. 配置客服 WhatsApp 与充值链接
-        ADMIN_PHONE = "60122382546" 
-        wa_recharge_msg = T["wa_msg_template"].format(current_user)
-        wa_recharge_url = f"https://wa.me/{ADMIN_PHONE}?text={wa_recharge_msg}"
-    
-        is_quota_empty = (remaining_quota <= 0)
-    
-        # 🌟 2. 如果额度用尽，直接在页面上展示红色警示与 VIP 充值卡片
+
+    # 🌟 额度与充值逻辑
+    ADMIN_PHONE = "60122382546" 
+    wa_recharge_msg = T["wa_msg_template"].format(current_user)
+    wa_recharge_url = f"https://wa.me/{ADMIN_PHONE}?text={wa_recharge_msg}"
+
+    is_quota_empty = (remaining_quota <= 0)
+
+    if is_quota_empty:
+        st.error(T["quota_exhausted"])
+        st.markdown(
+            f"""
+            <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                <p style="color: #721c24; margin: 0 0 10px 0; font-weight: bold;">{T['vip_card_title']}</p>
+                <p style="color: #721c24; margin: 0 0 12px 0; font-size: 14px;">{T['vip_card_desc']}</p>
+                <a href="{wa_recharge_url}" target="_blank" style="
+                    display: block;
+                    width: 100%;
+                    text-align: center;
+                    background-color: #25D366;
+                    color: white;
+                    padding: 12px 0px;
+                    font-size: 15px;
+                    font-weight: bold;
+                    text-decoration: none;
+                    border-radius: 6px;
+                ">{T['vip_btn_text']}</a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    # 唯一 key 绑定的开始分析按钮
+    if st.button(T["btn_start_analysis"], type="primary", use_container_width=True, disabled=is_quota_empty, key="btn_do_analysis"):
         if is_quota_empty:
-            st.error(T["quota_exhausted"])
-            st.markdown(
-                f"""
-                <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                    <p style="color: #721c24; margin: 0 0 10px 0; font-weight: bold;">{T['vip_card_title']}</p>
-                    <p style="color: #721c24; margin: 0 0 12px 0; font-size: 14px;">{T['vip_card_desc']}</p>
-                    <a href="{wa_recharge_url}" target="_blank" style="
-                        display: block;
-                        width: 100%;
-                        text-align: center;
-                        background-color: #25D366;
-                        color: white;
-                        padding: 12px 0px;
-                        font-size: 15px;
-                        font-weight: bold;
-                        text-decoration: none;
-                        border-radius: 6px;
-                    ">{T['vip_btn_text']}</a>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-    
-        # 🌟 3. 单一按钮：没额度时自动变灰禁用（disabled=True）
-        if st.button(T["btn_start_analysis"], type="primary", use_container_width=True, disabled=is_quota_empty):
-            if is_quota_empty:
-                st.stop()
-    
-            with st.spinner(T["analyzing"]):
-                final_inputs = [*ai_contents, user_prompt]
-                success = False
-                
-                for attempt in range(len(clients)):
-                    current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
-                    try:
-                        response = current_client.models.generate_content(
-                            model='gemini-3.6-flash',
-                            contents=final_inputs
-                        )
-                        raw_text = response.text
-                        st.session_state["analysis_result"] = raw_text
-                        
-                        st.session_state["invoice_raw_df"] = None
-                        json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
-                        if json_match:
-                            try:
-                                json_data = json.loads(json_match.group(1).strip())
-                                if isinstance(json_data, list) and len(json_data) > 0:
-                                    df = pd.DataFrame(json_data)
-                                    for expected_col in ["date", "merchant", "category", "invoice_no", "tax_amount", "total_amount"]:
-                                        if expected_col not in df.columns:
-                                            df[expected_col] = 0.0 if "amount" in expected_col else "-"
-                                    
-                                    df["tax_amount"] = pd.to_numeric(df["tax_amount"], errors="coerce").fillna(0.0)
-                                    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce").fillna(0.0)
-                                    st.session_state["invoice_raw_df"] = df
-                            except Exception:
-                                pass
-                        
-                        # 语音生成
+            st.stop()
+
+        with st.spinner(T["analyzing"]):
+            final_inputs = [*ai_contents, user_prompt]
+            success = False
+            
+            for attempt in range(len(clients)):
+                current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
+                try:
+                    response = current_client.models.generate_content(
+                        model='gemini-3.6-flash',
+                        contents=final_inputs
+                    )
+                    raw_text = response.text
+                    st.session_state["analysis_result"] = raw_text
+                    
+                    st.session_state["invoice_raw_df"] = None
+                    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
+                    if json_match:
                         try:
-                            clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
-                            clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
-                            
-                            target_voice = T["tts_voice"]
-                            async def generate_voice_data(text_to_read: str) -> bytes:
-                                communicator = edge_tts.Communicate(text_to_read, target_voice)
-                                audio_stream = b""
-                                async for chunk in communicator.stream():
-                                    if chunk["type"] == "audio":
-                                        audio_stream += chunk["data"]
-                                return audio_stream
-                            
-                            audio_data = asyncio.run(generate_voice_data(clean_voice_text))
-                            if audio_data:
-                                st.session_state["audio_bytes"] = audio_data
+                            json_data = json.loads(json_match.group(1).strip())
+                            if isinstance(json_data, list) and len(json_data) > 0:
+                                df = pd.DataFrame(json_data)
+                                for expected_col in ["date", "merchant", "category", "invoice_no", "tax_amount", "total_amount"]:
+                                    if expected_col not in df.columns:
+                                        df[expected_col] = 0.0 if "amount" in expected_col else "-"
+                                
+                                df["tax_amount"] = pd.to_numeric(df["tax_amount"], errors="coerce").fillna(0.0)
+                                df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce").fillna(0.0)
+                                st.session_state["invoice_raw_df"] = df
                         except Exception:
                             pass
+                    
+                    # 语音生成
+                    try:
+                        clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
+                        clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
                         
-                        if user_data and "row" in user_data:
-                            try:
-                                sheet = get_user_sheet()
-                                sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
-                            except Exception:
-                                pass
+                        target_voice = T["tts_voice"]
+                        async def generate_voice_data(text_to_read: str) -> bytes:
+                            communicator = edge_tts.Communicate(text_to_read, target_voice)
+                            audio_stream = b""
+                            async for chunk in communicator.stream():
+                                if chunk["type"] == "audio":
+                                    audio_stream += chunk["data"]
+                            return audio_stream
                         
-                        st.session_state["clear_clipboard_trigger"] = True
-                        success = True
-                        st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
-                        st.rerun()
-                        break
-                        
-                    except Exception as e:
-                        err_msg = str(e)
-                        if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-                            if attempt < len(clients) - 1:
-                                continue
-                            else:
-                                st.error(f"⚠️ API Key Quota Limit: {err_msg}")
-                        elif "503" in err_msg or "UNAVAILABLE" in err_msg:
-                            st.error("⚠️ AI server busy, please try again.")
+                        audio_data = asyncio.run(generate_voice_data(clean_voice_text))
+                        if audio_data:
+                            st.session_state["audio_bytes"] = audio_data
+                    except Exception:
+                        pass
+                    
+                    if user_data and "row" in user_data:
+                        try:
+                            sheet = get_user_sheet()
+                            sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
+                        except Exception:
+                            pass
+                    
+                    st.session_state["clear_clipboard_trigger"] = True
+                    success = True
+                    st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
+                    st.rerun()
+                    break
+                    
+                except Exception as e:
+                    err_msg = str(e)
+                    if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                        if attempt < len(clients) - 1:
+                            continue
                         else:
-                            st.error(f"Error: {err_msg}")
-                            break
+                            st.error(f"⚠️ API Key Quota Limit: {err_msg}")
+                    elif "503" in err_msg or "UNAVAILABLE" in err_msg:
+                        st.error("⚠️ AI server busy, please try again.")
+                    else:
+                        st.error(f"Error: {err_msg}")
+                        break
 
 # ================= 🟢 第四步：展示结果与下载 Excel =================
 if "analysis_result" in st.session_state and st.session_state["analysis_result"]:
@@ -845,12 +842,10 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.divider()
     st.subheader(T["res_header"])
     
-    # 🌟 核心亮点：使用标准内部 Key 进行编辑与多语言列名呈现
     if st.session_state.get("invoice_raw_df") is not None:
         df = st.session_state["invoice_raw_df"]
         st.info(T["edit_tip"])
         
-        # 将内部 Key 映射为前端展示的多语言标签
         col_configs = {
             "date": st.column_config.TextColumn(T["col_date"]),
             "merchant": st.column_config.TextColumn(T["col_merchant"]),
@@ -868,7 +863,6 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
             key="invoice_editor_safe"
         )
         
-        # 安全计算（基于标准英文字段，永不报错）
         edited_df["total_amount"] = pd.to_numeric(edited_df["total_amount"], errors="coerce").fillna(0.0)
         edited_df["tax_amount"] = pd.to_numeric(edited_df["tax_amount"], errors="coerce").fillna(0.0)
         
@@ -880,7 +874,6 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
             with cols[idx % len(cols)]:
                 st.metric(label=f"🏷️ {row_cat['category']}", value=f"RM {row_cat['total_amount']:.2f}")
 
-        # 导出对应语言的 Excel
         excel_data = create_formatted_excel(edited_df, T)
         
         def notify_excel_download():
@@ -893,7 +886,8 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
             on_click=notify_excel_download,
-            use_container_width=True
+            use_container_width=True,
+            key="btn_download_excel"
         )
         st.caption(T["excel_path_tip"])
         st.write("")
@@ -953,7 +947,8 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
                 file_name="voice_report.mp3",
                 mime="audio/mp3",
                 on_click=notify_voice_download,
-                use_container_width=True
+                use_container_width=True,
+                key="btn_download_voice"
             )
             st.caption(T["voice_tip"])
         else:
