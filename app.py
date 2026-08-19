@@ -64,20 +64,22 @@ def get_user_sheet():
 
 def get_all_users():
     sheet = get_user_sheet()
-    # 使用 value_render_option="FORMATTED_VALUE" 强制保留原始文本（包括开头的 0）
+    # 强制获取所有原始单元格的显示文本
     records = sheet.get_all_records(value_render_option="FORMATTED_VALUE")
     users_dict = {}
     for idx, r in enumerate(records, start=2):
-        u_key = str(r["username"]).strip()
-        users_dict[u_key] = {
+        raw_u = str(r.get("username", "")).strip()
+        raw_p = str(r.get("password", "")).strip()
+        
+        # 兼容处理：自动保留去除前导零和保留前导零两种格式
+        users_dict[raw_u] = {
             "row": idx,
-            "password": str(r["password"]).strip(),
-            "daily_limit": int(r["daily_limit"]) if str(r["daily_limit"]).isdigit() else 2,
-            "used_today": int(r["used_today"]) if str(r["used_today"]).isdigit() else 0,
-            "last_date": str(r["last_date"]).strip()
+            "password": raw_p,
+            "daily_limit": int(r["daily_limit"]) if str(r.get("daily_limit", "")).isdigit() else 2,
+            "used_today": int(r["used_today"]) if str(r.get("used_today", "")).isdigit() else 0,
+            "last_date": str(r.get("last_date", "")).strip()
         }
     return users_dict
-
 # ================= 🔒 第一步：用户登录与自主注册系统 =================
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -95,7 +97,18 @@ if not st.session_state["authenticated"]:
             with st.spinner("正在验证..."):
                 users = get_all_users()
                 clean_u = login_u.strip()
-                if clean_u in users and users[clean_u]["password"] == login_p.strip():
+                clean_p = login_p.strip()
+                
+                # 兼容查找：直接匹配、去 0 匹配、补 0 匹配
+                matched_user = None
+                if clean_u in users:
+                    matched_user = users[clean_u]
+                elif clean_u.lstrip("0") in users: # 用户输入 0122...，表格存 122...
+                    matched_user = users[clean_u.lstrip("0")]
+                elif f"0{clean_u}" in users:       # 用户输入 122...，表格存 0122...
+                    matched_user = users[f"0{clean_u}"]
+                
+                if matched_user and str(matched_user["password"]).strip() == clean_p:
                     st.session_state["authenticated"] = True
                     st.session_state["current_user"] = clean_u
                     st.success("✅ 登录成功！")
