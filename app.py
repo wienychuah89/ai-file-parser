@@ -582,53 +582,123 @@ if ai_contents:
         [T["mode_receipt"], T["mode_medical"], T["mode_contract"], T["mode_custom"]]
     )
     
-    lang_instruction = "请使用简体中文回答。"
+    # 🌟 根据所选语言，动态匹配完全本地化的 Prompt
     if "English" in selected_lang:
         lang_instruction = "Please respond in English."
+        if file_mode == T["mode_medical"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "Kidney Transplant Lab Report Analysis:\n"
+                "1. Extract key values: Creatinine, Urea, Hemoglobin (Hb) in a Markdown table with reference ranges.\n"
+                "2. Evaluate stability against historical baseline and give health/dietary reminders."
+            )
+        elif file_mode == T["mode_receipt"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "Please analyze the uploaded receipt(s)/invoice(s).\n"
+                "[Task 1]: Provide a clear human-readable summary (merchant name, items, total amount).\n"
+                "[Task 2 - CRITICAL]: At the very end, output a valid JSON array wrapped in ```json and ``` with exact keys:\n"
+                "[\n"
+                "  {\n"
+                "    \"date\": \"YYYY-MM-DD\",\n"
+                "    \"merchant\": \"Merchant Name\",\n"
+                "    \"category\": \"Category (Petrol/Dining/Repair/Office/Others)\",\n"
+                "    \"invoice_no\": \"Receipt No\",\n"
+                "    \"tax_amount\": 0.00,\n"
+                "    \"total_amount\": 0.00\n"
+                "  }\n"
+                "]"
+            )
+        elif file_mode == T["mode_contract"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "Extract core information from the document:\n"
+                "1. Main subject and key terms/clauses?\n"
+                "2. Important dates & signing parties?\n"
+                "3. Key responsibilities and potential risks?"
+            )
+        else:
+            default_prompt = f"{lang_instruction}\nPlease analyze the uploaded file and summarize core points:\n1."
+
     elif "Melayu" in selected_lang:
         lang_instruction = "Sila berikan jawapan dalam Bahasa Melayu."
+        if file_mode == T["mode_medical"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "Analisis Laporan Makmal Pemindahan Buah Pinggang:\n"
+                "1. Ekstrak nilai utama: Kreatinin (Creatinine), Urea, Hemoglobin (Hb) dalam jadual Markdown beserta nilai rujukan.\n"
+                "2. Nilaikan kestabilan bacaan dan berikan panduan penjagaan pemakanan & kesihatan."
+            )
+        elif file_mode == T["mode_receipt"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "Sila analisa resit/invois yang dimuat naik.\n"
+                "[Tugasan 1]: Berikan ringkasan teks yang jelas (nama peniaga, butiran, jumlah amaun).\n"
+                "[Tugasan 2 - SANGAT PENTING]: Di bahagian paling akhir, berikan tatasusunan JSON yang sah dalam ```json dan ``` dengan kunci berikut:\n"
+                "[\n"
+                "  {\n"
+                "    \"date\": \"YYYY-MM-DD\",\n"
+                "    \"merchant\": \"Nama Peniaga\",\n"
+                "    \"category\": \"Kategori (Minyak/Makanan/Pembaikan/Pejabat/Lain-lain)\",\n"
+                "    \"invoice_no\": \"No Resit\",\n"
+                "    \"tax_amount\": 0.00,\n"
+                "    \"total_amount\": 0.00\n"
+                "  }\n"
+                "]"
+            )
+        elif file_mode == T["mode_contract"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "Ekstrak maklumat utama dokumen:\n"
+                "1. Tajuk utama dan syarat teras?\n"
+                "2. Tarikh penting & pihak yang terlibat?\n"
+                "3. Tanggungjawab utama & risiko penting?"
+            )
+        else:
+            default_prompt = f"{lang_instruction}\nSila analisa dokumen ini dan ringkaskan isi utama:\n1."
 
-    if file_mode == T["mode_medical"]:
-        default_prompt = (
-            f"{lang_instruction}\n"
-            "化验单关键信息提取任务：\n"
-            "1. 提取肌酐（Creatinine）、尿素（Urea）、血红蛋白（Hb）核心数值，用Markdown表格列出并附参考值。\n"
-            "2. 评估当前指标状态与健康注意事项。"
-        )
-    elif file_mode == T["mode_receipt"]:
-        default_prompt = (
-            f"{lang_instruction}\n"
-            "请分析我上传的发票/收据单据（可能包含单张或多张）。\n"
-            "【任务 1】：输出清晰的人类易读文字总结（包括商户、明细、金额总计）。\n"
-            "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须严格对应如下英文键名：\n"
-            "[\n"
-            "  {\n"
-            "    \"date\": \"YYYY-MM-DD\",\n"
-            "    \"merchant\": \"Merchant Name\",\n"
-            "    \"category\": \"Category (e.g., Petrol / Dining / Repair / Office / Miscellaneous)\",\n"
-            "    \"invoice_no\": \"Receipt/Invoice No\",\n"
-            "    \"tax_amount\": 0.00,\n"
-            "    \"total_amount\": 0.00\n"
-            "  }\n"
-            "]"
-        )
-    elif file_mode == T["mode_contract"]:
-        default_prompt = (
-            f"{lang_instruction}\n"
-            "提取整理文件核心信息：\n"
-            "1. 核心条款与主题？\n"
-            "2. 关键日期与主体？\n"
-            "3. 核心责任与风险点？"
-        )
-    else:
-        default_prompt = f"{lang_instruction}\nAnalyze core information and summarize points:"
+    else: # 中文
+        lang_instruction = "请使用简体中文回答。"
+        if file_mode == T["mode_medical"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "化验单关键信息提取任务：\n"
+                "1. 提取肌酐（Creatinine）、尿素（Urea）、血红蛋白（Hb）核心数值，用Markdown表格列出并附参考值。\n"
+                "2. 评估当前指标状态与健康注意事项。"
+            )
+        elif file_mode == T["mode_receipt"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "请分析我上传的发票/收据单据（可能包含单张或多张）。\n"
+                "【任务 1】：输出清晰的人类易读文字总结（包括商户、明细、金额总计）。\n"
+                "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须严格对应如下英文键名：\n"
+                "[\n"
+                "  {\n"
+                "    \"date\": \"YYYY-MM-DD\",\n"
+                "    \"merchant\": \"Merchant Name\",\n"
+                "    \"category\": \"Category (e.g., Petrol / Dining / Repair / Office / Miscellaneous)\",\n"
+                "    \"invoice_no\": \"Receipt/Invoice No\",\n"
+                "    \"tax_amount\": 0.00,\n"
+                "    \"total_amount\": 0.00\n"
+                "  }\n"
+                "]"
+            )
+        elif file_mode == T["mode_contract"]:
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "提取整理文件核心信息：\n"
+                "1. 核心条款与主题？\n"
+                "2. 关键日期与主体？\n"
+                "3. 核心责任与风险点？"
+            )
+        else:
+            default_prompt = f"{lang_instruction}\n请根据我上传的文件，分析核心信息并总结要点：\n1."
 
     user_prompt = st.text_area(
         T["prompt_label"], 
         value=default_prompt,
         height=160
     )
-
     if st.button(T["btn_start_analysis"], type="primary", use_container_width=True):
         if remaining_quota <= 0:
             st.error(T["quota_exhausted"])
