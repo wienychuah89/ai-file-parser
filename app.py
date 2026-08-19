@@ -64,15 +64,17 @@ def get_user_sheet():
 
 def get_all_users():
     sheet = get_user_sheet()
-    records = sheet.get_all_records()
+    # 使用 value_render_option="FORMATTED_VALUE" 强制保留原始文本（包括开头的 0）
+    records = sheet.get_all_records(value_render_option="FORMATTED_VALUE")
     users_dict = {}
-    for idx, r in enumerate(records, start=2): # 从第2行开始（避开表头）
-        users_dict[str(r["username"])] = {
+    for idx, r in enumerate(records, start=2):
+        u_key = str(r["username"]).strip()
+        users_dict[u_key] = {
             "row": idx,
-            "password": str(r["password"]),
-            "daily_limit": int(r["daily_limit"]),
-            "used_today": int(r["used_today"]),
-            "last_date": str(r["last_date"])
+            "password": str(r["password"]).strip(),
+            "daily_limit": int(r["daily_limit"]) if str(r["daily_limit"]).isdigit() else 2,
+            "used_today": int(r["used_today"]) if str(r["used_today"]).isdigit() else 0,
+            "last_date": str(r["last_date"]).strip()
         }
     return users_dict
 
