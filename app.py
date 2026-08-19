@@ -412,36 +412,45 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
     except Exception:
         return image_bytes
 
-# 🌟 生成多语言双 Sheet 财务级 Excel
+# 🌟 生成多语言双 Sheet 财务级 Excel（内部统一标准字段）
 def create_formatted_excel(df: pd.DataFrame, t_dict: dict) -> bytes:
     df_export = df.copy()
     
-    col_tax = t_dict["col_tax"]
-    col_total = t_dict["col_total"]
-    col_cat = t_dict["col_category"]
+    # 强制将税额和总金额转为浮点数
+    df_export["tax_amount"] = pd.to_numeric(df_export["tax_amount"], errors="coerce").fillna(0.0)
+    df_export["total_amount"] = pd.to_numeric(df_export["total_amount"], errors="coerce").fillna(0.0)
     
-    df_export[col_tax] = pd.to_numeric(df_export[col_tax], errors="coerce").fillna(0.0)
-    df_export[col_total] = pd.to_numeric(df_export[col_total], errors="coerce").fillna(0.0)
+    tax_total = df_export["tax_amount"].sum()
+    amount_total = df_export["total_amount"].sum()
     
-    tax_total = df_export[col_tax].sum()
-    amount_total = df_export[col_total].sum()
-    
-    category_summary = df_export.groupby(col_cat)[col_total].sum().reset_index()
+    # 分类汇总表
+    category_summary = df_export.groupby("category")["total_amount"].sum().reset_index()
     category_summary.columns = [t_dict["sheet2_col1"], t_dict["sheet2_col2"]]
+    
+    # 明细表重命名为当前选择的语言
+    rename_map = {
+        "date": t_dict["col_date"],
+        "merchant": t_dict["col_merchant"],
+        "category": t_dict["col_category"],
+        "invoice_no": t_dict["col_invoice"],
+        "tax_amount": t_dict["col_tax"],
+        "total_amount": t_dict["col_total"]
+    }
+    df_detail_named = df_export.rename(columns=rename_map)
     
     total_row = {
         t_dict["col_date"]: t_dict["total_row_label"],
         t_dict["col_merchant"]: t_dict["total_count_label"].format(len(df_export)),
-        col_cat: "-",
+        t_dict["col_category"]: "-",
         t_dict["col_invoice"]: "-",
-        col_tax: tax_total,
-        col_total: amount_total
+        t_dict["col_tax"]: tax_total,
+        t_dict["col_total"]: amount_total
     }
-    df_detail = pd.concat([df_export, pd.DataFrame([total_row])], ignore_index=True)
+    df_detail_final = pd.concat([df_detail_named, pd.DataFrame([total_row])], ignore_index=True)
     
     excel_buffer = io.BytesIO()
     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-        df_detail.to_excel(writer, index=False, sheet_name=t_dict["sheet1_name"])
+        df_detail_final.to_excel(writer, index=False, sheet_name=t_dict["sheet1_name"])
         category_summary.to_excel(writer, index=False, sheet_name=t_dict["sheet2_name"])
         
         header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
@@ -573,7 +582,6 @@ if ai_contents:
         [T["mode_receipt"], T["mode_medical"], T["mode_contract"], T["mode_custom"]]
     )
     
-    # 动态匹配提示词语言
     lang_instruction = "请使用简体中文回答。"
     if "English" in selected_lang:
         lang_instruction = "Please respond in English."
@@ -592,12 +600,12 @@ if ai_contents:
             f"{lang_instruction}\n"
             "请分析我上传的发票/收据单据（可能包含单张或多张）。\n"
             "【任务 1】：输出清晰的人类易读文字总结（包括商户、明细、金额总计）。\n"
-            "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须严格对应如下格式：\n"
+            "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须严格对应如下英文键名：\n"
             "[\n"
             "  {\n"
             "    \"date\": \"YYYY-MM-DD\",\n"
             "    \"merchant\": \"Merchant Name\",\n"
-            "    \"category\": \"Category (e.g., Petrol / Dining / Repair / Office)\",\n"
+            "    \"category\": \"Category (e.g., Petrol / Dining / Repair / Office / Miscellaneous)\",\n"
             "    \"invoice_no\": \"Receipt/Invoice No\",\n"
             "    \"tax_amount\": 0.00,\n"
             "    \"total_amount\": 0.00\n"
@@ -640,29 +648,25 @@ if ai_contents:
                     raw_text = response.text
                     st.session_state["analysis_result"] = raw_text
                     
-                    st.session_state["invoice_df"] = None
+                    st.session_state["invoice_raw_df"] = None
                     json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
                     if json_match:
                         try:
                             json_data = json.loads(json_match.group(1).strip())
                             if isinstance(json_data, list) and len(json_data) > 0:
                                 df = pd.DataFrame(json_data)
-                                rename_map = {
-                                    "date": T["col_date"],
-                                    "merchant": T["col_merchant"],
-                                    "category": T["col_category"],
-                                    "invoice_no": T["col_invoice"],
-                                    "tax_amount": T["col_tax"],
-                                    "total_amount": T["col_total"]
-                                }
-                                df = df.rename(columns=rename_map)
-                                df[T["col_tax"]] = pd.to_numeric(df[T["col_tax"]], errors="coerce").fillna(0.0)
-                                df[T["col_total"]] = pd.to_numeric(df[T["col_total"]], errors="coerce").fillna(0.0)
-                                st.session_state["invoice_df"] = df
+                                # 保证标准英文字段存在并做类型转换
+                                for expected_col in ["date", "merchant", "category", "invoice_no", "tax_amount", "total_amount"]:
+                                    if expected_col not in df.columns:
+                                        df[expected_col] = 0.0 if "amount" in expected_col else "-"
+                                
+                                df["tax_amount"] = pd.to_numeric(df["tax_amount"], errors="coerce").fillna(0.0)
+                                df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce").fillna(0.0)
+                                st.session_state["invoice_raw_df"] = df
                         except Exception:
                             pass
                     
-                    # 语音生成：使用对应语言的高品质音色
+                    # 语音生成
                     try:
                         clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
                         clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
@@ -726,32 +730,42 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.divider()
     st.subheader(T["res_header"])
     
-    if st.session_state.get("invoice_df") is not None:
-        df = st.session_state["invoice_df"]
+    # 🌟 核心亮点：使用标准内部 Key 进行编辑与多语言列名呈现
+    if st.session_state.get("invoice_raw_df") is not None:
+        df = st.session_state["invoice_raw_df"]
         st.info(T["edit_tip"])
+        
+        # 将内部 Key 映射为前端展示的多语言标签
+        col_configs = {
+            "date": st.column_config.TextColumn(T["col_date"]),
+            "merchant": st.column_config.TextColumn(T["col_merchant"]),
+            "category": st.column_config.TextColumn(T["col_category"]),
+            "invoice_no": st.column_config.TextColumn(T["col_invoice"]),
+            "tax_amount": st.column_config.NumberColumn(T["col_tax"], format="RM %.2f"),
+            "total_amount": st.column_config.NumberColumn(T["col_total"], format="RM %.2f"),
+        }
         
         edited_df = st.data_editor(
             df,
             use_container_width=True,
             num_rows="dynamic",
-            column_config={
-                T["col_tax"]: st.column_config.NumberColumn(format="RM %.2f"),
-                T["col_total"]: st.column_config.NumberColumn(format="RM %.2f"),
-            },
-            key="invoice_editor"
+            column_config=col_configs,
+            key="invoice_editor_safe"
         )
         
-        edited_df[T["col_total"]] = pd.to_numeric(edited_df[T["col_total"]], errors="coerce").fillna(0.0)
-        edited_df[T["col_tax"]] = pd.to_numeric(edited_df[T["col_tax"]], errors="coerce").fillna(0.0)
+        # 安全计算（基于标准英文字段，永不报错）
+        edited_df["total_amount"] = pd.to_numeric(edited_df["total_amount"], errors="coerce").fillna(0.0)
+        edited_df["tax_amount"] = pd.to_numeric(edited_df["tax_amount"], errors="coerce").fillna(0.0)
         
-        cat_group = edited_df.groupby(T["col_category"])[T["col_total"]].sum().reset_index()
+        cat_group = edited_df.groupby("category")["total_amount"].sum().reset_index()
         
         st.write(T["cat_board"])
         cols = st.columns(len(cat_group) if len(cat_group) > 0 else 1)
         for idx, row_cat in cat_group.iterrows():
             with cols[idx % len(cols)]:
-                st.metric(label=f"🏷️ {row_cat[T['col_category']]}", value=f"RM {row_cat[T['col_total']]:.2f}")
+                st.metric(label=f"🏷️ {row_cat['category']}", value=f"RM {row_cat['total_amount']:.2f}")
 
+        # 导出对应语言的 Excel
         excel_data = create_formatted_excel(edited_df, T)
         
         def notify_excel_download():
