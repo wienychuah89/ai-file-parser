@@ -19,11 +19,228 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 # 1. 页面基本配置
-st.set_page_config(page_title="AI 文件与发票助手", layout="centered")
+st.set_page_config(page_title="AI File & Receipt Assistant", layout="centered")
 
 # ==========================================
-# 📱 针对超长屏与移动端的样式优化
+# 🌐 多语言文本字典 (i18n Dictionary)
 # ==========================================
+LANG_DICT = {
+    "🇨🇳 中文": {
+        "app_title": "📄 AI 多功能文件与发票助手",
+        "login_title": "🔐 AI 分析器用户通道",
+        "tab_login": "🔑 用户登录",
+        "tab_register": "📝 新用户注册",
+        "lbl_user": "📞 手机号 / 用户名：",
+        "lbl_pass": "🔑 密码：",
+        "btn_login": "立即登录",
+        "login_success": "✅ 登录成功！",
+        "login_fail": "❌ 用户名或密码错误！",
+        "reg_info": "💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！",
+        "reg_u_lbl": "📞 输入您的手机号或用户名：",
+        "reg_p_lbl": "🔑 设置访问密码：",
+        "reg_p2_lbl": "🔑 确认访问密码：",
+        "btn_register": "提交注册并自动登录",
+        "err_empty": "⚠️ 用户名和密码不能为空！",
+        "err_mismatch": "⚠️ 两次输入的密码不一致！",
+        "err_exists": "⚠️ 该账号已被注册，请直接前往登录！",
+        "reg_success": "🎉 注册成功！已为您自动登录。",
+        "quota_label": "今日剩余可用额度：",
+        "quota_exhausted": "⚠️ 您今日的免费额度已用尽！请明日再来，或联系客服开通无限次通道。",
+        "phone_tip": "⚠️ 手机端温馨提示：为防止手机直接拍照导致网页刷新，建议您【先用手机相机拍好文件】，再点击下方按钮前往【相册】选取上传！",
+        "upload_label": "📷 选择单张或多张文件/发票（支持单次多选）",
+        "read_success": "已成功读取 {} 个文件！",
+        "file_page": "📷 文件第 {} 页: {}",
+        "file_type_label": "🔮 请选择文件类型：",
+        "mode_receipt": "🧾 车辆/商业发票收据 (支持批量导出Excel)",
+        "mode_medical": "🏥 肾移植复诊报告",
+        "mode_contract": "📄 商业合同与通用文件",
+        "mode_custom": "✍️ 自由输入/其他全新文件",
+        "prompt_label": "💬 您想对 AI 提问什么？（可直接修改或补充）",
+        "btn_start_analysis": "🚀 开始 AI 深度分析",
+        "analyzing": "AI 正在深度分析中，请稍候...",
+        "res_header": "📊 AI 分析与提取结果",
+        "edit_tip": "💡 **提示**：您可以直接**双击下方表格中的任何单元格**修改金额、店名或分类，下载的 Excel 将自动以修改后的数据为准！",
+        "cat_board": "📈 **分类开销汇总看板**：",
+        "btn_dl_excel": "📥 立即下载 Excel 记账汇总表 (.xlsx)",
+        "excel_downloaded": "✅ Excel 报表已成功下载！",
+        "excel_path_tip": "💡 文件已保存至您手机/电脑的【下载 (Downloads)】文件夹中。",
+        "voice_title": "🎵 语音朗读报告：",
+        "share_header": "📲 结果快捷分享通道",
+        "share_radio_lbl": "📌 请选择您希望分享到 WhatsApp 的内容类型：",
+        "share_opt_text": "📝 发送文字报告",
+        "share_opt_voice": "🎵 发送语音报告 (MP3)",
+        "wa_step1": "💡 步骤一：输入接收人电话并锁定：",
+        "wa_phone_lbl": "📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):",
+        "wa_btn_lock": "🔒 锁定号码并生成通道",
+        "wa_lock_ok": "✅ 号码 {} 锁定成功！",
+        "wa_lock_empty": "✅ 已锁定为空号模式！",
+        "wa_step2_txt": "📋 步骤二：点击下方复制文本报告：",
+        "btn_copy": "📋 点击此处 ➡️ 一键复制 AI 分析文本",
+        "copy_ok": "🎉 复制成功！请前往 WhatsApp 粘贴发送！",
+        "wa_step2_voice": "💾 步骤二：点击下方下载语音文件：",
+        "btn_dl_voice": "⬇️ 下载语音文件 (voice_report.mp3)",
+        "voice_downloaded": "✅ 语音文件已下载至 Downloads 文件夹！",
+        "voice_tip": "💡 提示：下载后打开 WhatsApp，在聊天框点击 📎 附件选择该 MP3 发送即可。",
+        "wa_step3": "🟢 步骤三：点击前往 WhatsApp",
+        "tts_voice": "zh-CN-YunxiNeural",
+        "col_date": "日期",
+        "col_merchant": "商家名称",
+        "col_category": "分类",
+        "col_invoice": "单据号码",
+        "col_tax": "税额 (SST)",
+        "col_total": "总金额 (Total)",
+        "sheet1_name": "发票收据明细",
+        "sheet2_name": "分类统计汇总",
+        "sheet2_col1": "消费类别",
+        "sheet2_col2": "分类汇总金额 (RM)",
+        "total_row_label": "总计 (TOTAL)",
+        "total_count_label": "共 {} 张单据",
+    },
+    "🇬🇧 English": {
+        "app_title": "📄 AI Multi-Purpose Document & Receipt Assistant",
+        "login_title": "🔐 AI Assistant User Portal",
+        "tab_login": "🔑 Login",
+        "tab_register": "📝 Register",
+        "lbl_user": "📞 Phone Number / Username:",
+        "lbl_pass": "🔑 Password:",
+        "btn_login": "Login Now",
+        "login_success": "✅ Login successful!",
+        "login_fail": "❌ Invalid username or password!",
+        "reg_info": "💡 Register now to get 2 FREE AI deep analyses daily!",
+        "reg_u_lbl": "📞 Enter your phone number or username:",
+        "reg_p_lbl": "🔑 Set password:",
+        "reg_p2_lbl": "🔑 Confirm password:",
+        "btn_register": "Submit & Login",
+        "err_empty": "⚠️ Username and password cannot be empty!",
+        "err_mismatch": "⚠️ Passwords do not match!",
+        "err_exists": "⚠️ Username already registered. Please login!",
+        "reg_success": "🎉 Registered successfully! Logged in automatically.",
+        "quota_label": "Remaining daily quota:",
+        "quota_exhausted": "⚠️ Your daily free quota is exhausted! Please return tomorrow or contact support.",
+        "phone_tip": "⚠️ Mobile Tip: To prevent camera auto-refresh, please take photos first and upload from your Photo Library!",
+        "upload_label": "📷 Upload Documents / Receipts (Multiple files supported)",
+        "read_success": "Successfully loaded {} files!",
+        "file_page": "📷 File Page {}: {}",
+        "file_type_label": "🔮 Select Document Type:",
+        "mode_receipt": "🧾 Receipts & Invoices (Batch Excel Export)",
+        "mode_medical": "🏥 Kidney Transplant Follow-up Lab Report",
+        "mode_contract": "📄 Business Contract & General Document",
+        "mode_custom": "✍️ Custom Input / Other Documents",
+        "prompt_label": "💬 What would you like to ask AI? (Editable)",
+        "btn_start_analysis": "🚀 Start AI Deep Analysis",
+        "analyzing": "AI is analyzing, please wait...",
+        "res_header": "📊 Analysis & Extraction Results",
+        "edit_tip": "💡 **Tip**: Double-click any table cell below to edit amounts or categories. The downloaded Excel will reflect your edits!",
+        "cat_board": "📈 **Expense Summary by Category**:",
+        "btn_dl_excel": "📥 Download Excel Expense Report (.xlsx)",
+        "excel_downloaded": "✅ Excel report downloaded successfully!",
+        "excel_path_tip": "💡 Saved to your Downloads folder.",
+        "voice_title": "🎵 Voice Audio Report:",
+        "share_header": "📲 Quick WhatsApp Share Channel",
+        "share_radio_lbl": "📌 Select content type to share on WhatsApp:",
+        "share_opt_text": "📝 Send Text Report",
+        "share_opt_voice": "🎵 Send Voice Audio (MP3)",
+        "wa_step1": "💡 Step 1: Enter & lock recipient phone number:",
+        "wa_phone_lbl": "📞 Recipient Phone (Optional, e.g. 60123456789, leave blank for manual selection):",
+        "wa_btn_lock": "🔒 Lock Number & Create Link",
+        "wa_lock_ok": "✅ Phone {} locked successfully!",
+        "wa_lock_empty": "✅ Blank number mode locked!",
+        "wa_step2_txt": "📋 Step 2: Click below to copy text report:",
+        "btn_copy": "📋 Click here ➡️ Copy AI Report Text",
+        "copy_ok": "🎉 Copied! Please paste in WhatsApp!",
+        "wa_step2_voice": "💾 Step 2: Download voice file below:",
+        "btn_dl_voice": "⬇️ Download Voice File (voice_report.mp3)",
+        "voice_downloaded": "✅ Voice file downloaded to Downloads!",
+        "voice_tip": "💡 Tip: Open WhatsApp, click 📎 Attachment ➡️ Audio to send.",
+        "wa_step3": "🟢 Step 3: Open WhatsApp",
+        "tts_voice": "en-US-AndrewMultilingualNeural",
+        "col_date": "Date",
+        "col_merchant": "Merchant Name",
+        "col_category": "Category",
+        "col_invoice": "Receipt No.",
+        "col_tax": "SST / Tax",
+        "col_total": "Total Amount",
+        "sheet1_name": "Receipt Details",
+        "sheet2_name": "Category Summary",
+        "sheet2_col1": "Expense Category",
+        "sheet2_col2": "Total Amount (RM)",
+        "total_row_label": "TOTAL",
+        "total_count_label": "Total {} receipts",
+    },
+    "🇲🇾 Bahasa Melayu": {
+        "app_title": "📄 Pembantu AI Dokumen & Resit Pelbagai Guna",
+        "login_title": "🔐 Saluran Pengguna Pembantu AI",
+        "tab_login": "🔑 Log Masuk",
+        "tab_register": "📝 Daftar Baru",
+        "lbl_user": "📞 No. Telefon / Nama Pengguna:",
+        "lbl_pass": "🔑 Kata Laluan:",
+        "btn_login": "Log Masuk Sekarang",
+        "login_success": "✅ Log masuk berjaya!",
+        "login_fail": "❌ Nama pengguna atau kata laluan tidak sah!",
+        "reg_info": "💡 Daftar sekarang untuk dapat 2 kuota analisis AI percuma setiap hari!",
+        "reg_u_lbl": "📞 Masukkan no telefon atau nama pengguna:",
+        "reg_p_lbl": "🔑 Tetapkan kata laluan:",
+        "reg_p2_lbl": "🔑 Sahkan kata laluan:",
+        "btn_register": "Hantar & Log Masuk",
+        "err_empty": "⚠️ Nama pengguna dan kata laluan tidak boleh kosong!",
+        "err_mismatch": "⚠️ Kata laluan tidak sepadan!",
+        "err_exists": "⚠️ Akaun telah didaftarkan. Sila log masuk!",
+        "reg_success": "🎉 Pendaftaran berjaya! Telah log masuk secara automatik.",
+        "quota_label": "Baki kuota hari ini:",
+        "quota_exhausted": "⚠️ Kuota percuma anda hari ini telah habis! Sila kembali esok.",
+        "phone_tip": "⚠️ Tip Telefon: Untuk elak muat semula laman web, sila tangkap gambar dahulu dan muat naik dari Galeri!",
+        "upload_label": "📷 Pilih Dokumen / Resit (Boleh pilih banyak fail)",
+        "read_success": "Berjaya membaca {} fail!",
+        "file_page": "📷 Fail Halaman {}: {}",
+        "file_type_label": "🔮 Pilih Jenis Dokumen:",
+        "mode_receipt": "🧾 Resit & Invois (Eksport Excel Berkelompok)",
+        "mode_medical": "🏥 Laporan Pemeriksaan Pemindahan Buah Pinggang",
+        "mode_contract": "📄 Kontrak Perniagaan & Dokumen Am",
+        "mode_custom": "✍️ Input Bebas / Dokumen Lain",
+        "prompt_label": "💬 Apa soalan anda untuk AI? (Boleh diubah)",
+        "btn_start_analysis": "🚀 Mula Analisis AI",
+        "analyzing": "AI sedang menganalisis, sila tunggu...",
+        "res_header": "📊 Hasil Analisis & Pengekstrakan AI",
+        "edit_tip": "💡 **Tip**: Klik dua kali pada sel jadual untuk membetulkan amaun atau kategori. Excel yang dimuat turun akan mengikut data terkini anda!",
+        "cat_board": "📈 **Papan Ringkasan Perbelanjaan Mengikut Kategori**:",
+        "btn_dl_excel": "📥 Muat Turun Laporan Excel (.xlsx)",
+        "excel_downloaded": "✅ Laporan Excel berjaya dimuat turun!",
+        "excel_path_tip": "💡 Fail disimpan dalam folder Muat Turun (Downloads).",
+        "voice_title": "🎵 Laporan Suara Audio:",
+        "share_header": "📲 Saluran Perkongsian WhatsApp Pantas",
+        "share_radio_lbl": "📌 Pilih jenis kandungan untuk dihantar ke WhatsApp:",
+        "share_opt_text": "📝 Hantar Laporan Teks",
+        "share_opt_voice": "🎵 Hantar Audio Suara (MP3)",
+        "wa_step1": "💡 Langkah 1: Masukkan & kunci no telefon penerima:",
+        "wa_phone_lbl": "📞 No Telefon Penerima (Pilihan, cth: 60123456789, biarkan kosong jika pilih manual):",
+        "wa_btn_lock": "🔒 Kunci Nombor & Bina Saluran",
+        "wa_lock_ok": "✅ Nombor {} berjaya dikunci!",
+        "wa_lock_empty": "✅ Mod nombor kosong dikunci!",
+        "wa_step2_txt": "📋 Langkah 2: Klik di bawah untuk salin teks laporan:",
+        "btn_copy": "📋 Klik Di Sini ➡️ Salin Teks Laporan AI",
+        "copy_ok": "🎉 Berjaya disalin! Sila tampal ke WhatsApp!",
+        "wa_step2_voice": "💾 Langkah 2: Muat turun audio suara di bawah:",
+        "btn_dl_voice": "⬇️ Muat Turun Fail Audio (voice_report.mp3)",
+        "voice_downloaded": "✅ Fail audio berjaya dimuat turun!",
+        "voice_tip": "💡 Tip: Buka WhatsApp, klik 📎 Lampiran ➡️ Audio untuk hantar.",
+        "wa_step3": "🟢 Langkah 3: Pergi ke WhatsApp",
+        "tts_voice": "ms-MY-OsmanNeural",
+        "col_date": "Tarikh",
+        "col_merchant": "Nama Peniaga",
+        "col_category": "Kategori",
+        "col_invoice": "No. Resit",
+        "col_tax": "Cukai / SST",
+        "col_total": "Jumlah Amaun",
+        "sheet1_name": "Butiran Resit",
+        "sheet2_name": "Ringkasan Kategori",
+        "sheet2_col1": "Kategori Perbelanjaan",
+        "sheet2_col2": "Jumlah Amaun (RM)",
+        "total_row_label": "JUMLAH (TOTAL)",
+        "total_count_label": "Sebanyak {} resit",
+    }
+}
+
+# 移动端样式优化
 st.markdown(
     """
     <style>
@@ -55,6 +272,14 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# 顶部语言选择下拉框
+selected_lang = st.selectbox(
+    "🌐 Language / 语言 / Bahasa",
+    ["🇨🇳 中文", "🇬🇧 English", "🇲🇾 Bahasa Melayu"],
+    index=0
+)
+T = LANG_DICT[selected_lang]
 
 # ================= 📊 Google Sheets 数据库连接层 =================
 @st.cache_resource
@@ -99,15 +324,15 @@ if "authenticated" not in st.session_state:
     st.session_state["current_user"] = None
 
 if not st.session_state["authenticated"]:
-    st.title("🔐 AI 分析器用户通道")
+    st.title(T["login_title"])
     
-    tab_login, tab_register = st.tabs(["🔑 用户登录", "📝 新用户注册"])
+    tab_login, tab_register = st.tabs([T["tab_login"], T["tab_register"]])
     
     with tab_login:
-        login_u = st.text_input("📞 手机号 / 用户名：", key="login_username")
-        login_p = st.text_input("🔑 密码：", type="password", key="login_password")
-        if st.button("立即登录", type="primary", use_container_width=True):
-            with st.spinner("正在验证..."):
+        login_u = st.text_input(T["lbl_user"], key="login_username")
+        login_p = st.text_input(T["lbl_pass"], type="password", key="login_password")
+        if st.button(T["btn_login"], type="primary", use_container_width=True):
+            with st.spinner("..."):
                 users = get_all_users()
                 clean_u = login_u.strip()
                 clean_p = login_p.strip()
@@ -123,15 +348,37 @@ if not st.session_state["authenticated"]:
                 if matched_user and str(matched_user["password"]).strip() == clean_p:
                     st.session_state["authenticated"] = True
                     st.session_state["current_user"] = clean_u
-                    st.success("✅ 登录成功！")
+                    st.success(T["login_success"])
                     st.rerun()
                 else:
-                    st.error("❌ 用户名或密码错误！")
+                    st.error(T["login_fail"])
                     
     with tab_register:
-        st.info("🚧 **系统升级维护中**")
-        st.warning("⚠️ 为了提供更优质的发票汇总功能，新用户注册通道暂时关闭升级。")
-        st.caption("💡 已有账号的用户可直接切换到【用户登录】正常使用。预计很快恢复注册，敬请期待！")
+        st.info(T["reg_info"])
+        reg_u = st.text_input(T["reg_u_lbl"], key="reg_username")
+        reg_p = st.text_input(T["reg_p_lbl"], type="password", key="reg_password")
+        reg_p2 = st.text_input(T["reg_p2_lbl"], type="password", key="reg_password2")
+        
+        if st.button(T["btn_register"], use_container_width=True):
+            clean_reg_u = reg_u.strip()
+            clean_reg_p = reg_p.strip()
+            if not clean_reg_u or not clean_reg_p:
+                st.warning(T["err_empty"])
+            elif clean_reg_p != reg_p2.strip():
+                st.warning(T["err_mismatch"])
+            else:
+                with st.spinner("..."):
+                    users = get_all_users()
+                    if clean_reg_u in users:
+                        st.warning(T["err_exists"])
+                    else:
+                        sheet = get_user_sheet()
+                        today_str = str(datetime.date.today())
+                        sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
+                        st.session_state["authenticated"] = True
+                        st.session_state["current_user"] = clean_reg_u
+                        st.success(T["reg_success"])
+                        st.rerun()
     st.stop()
 # =============================================================
 
@@ -145,7 +392,7 @@ if "GEMINI_API_KEY_TRIPLE" in st.secrets and st.secrets["GEMINI_API_KEY_TRIPLE"]
     clients.append(genai.Client(api_key=st.secrets["GEMINI_API_KEY_TRIPLE"].strip()))
 
 if not clients:
-    st.warning("⚠️ 请先在 Streamlit Secrets 中配置 GEMINI_API_KEY")
+    st.warning("⚠️ API Key Error")
     st.stop()
 
 if "key_index" not in st.session_state:
@@ -165,59 +412,54 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
     except Exception:
         return image_bytes
 
-# 🌟 生成包含明细与分类汇总双 Sheet 的财务级 Excel
-def create_formatted_excel(df: pd.DataFrame) -> bytes:
+# 🌟 生成多语言双 Sheet 财务级 Excel
+def create_formatted_excel(df: pd.DataFrame, t_dict: dict) -> bytes:
     df_export = df.copy()
     
-    # 确保数值格式安全
-    df_export["税额 (SST)"] = pd.to_numeric(df_export["税额 (SST)"], errors="coerce").fillna(0.0)
-    df_export["总金额 (Total)"] = pd.to_numeric(df_export["总金额 (Total)"], errors="coerce").fillna(0.0)
+    col_tax = t_dict["col_tax"]
+    col_total = t_dict["col_total"]
+    col_cat = t_dict["col_category"]
     
-    tax_total = df_export["税额 (SST)"].sum()
-    amount_total = df_export["总金额 (Total)"].sum()
+    df_export[col_tax] = pd.to_numeric(df_export[col_tax], errors="coerce").fillna(0.0)
+    df_export[col_total] = pd.to_numeric(df_export[col_total], errors="coerce").fillna(0.0)
     
-    # 生成分类汇总表
-    category_summary = df_export.groupby("分类")["总金额 (Total)"].sum().reset_index()
-    category_summary.columns = ["消费类别", "分类汇总金额 (RM)"]
+    tax_total = df_export[col_tax].sum()
+    amount_total = df_export[col_total].sum()
     
-    # 明细表追加总计行
+    category_summary = df_export.groupby(col_cat)[col_total].sum().reset_index()
+    category_summary.columns = [t_dict["sheet2_col1"], t_dict["sheet2_col2"]]
+    
     total_row = {
-        "日期": "总计 (TOTAL)",
-        "商家名称": f"共 {len(df_export)} 张单据",
-        "分类": "-",
-        "单据号码": "-",
-        "税额 (SST)": tax_total,
-        "总金额 (Total)": amount_total
+        t_dict["col_date"]: t_dict["total_row_label"],
+        t_dict["col_merchant"]: t_dict["total_count_label"].format(len(df_export)),
+        col_cat: "-",
+        t_dict["col_invoice"]: "-",
+        col_tax: tax_total,
+        col_total: amount_total
     }
     df_detail = pd.concat([df_export, pd.DataFrame([total_row])], ignore_index=True)
     
     excel_buffer = io.BytesIO()
     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-        df_detail.to_excel(writer, index=False, sheet_name="发票收据明细")
-        category_summary.to_excel(writer, index=False, sheet_name="分类统计汇总")
+        df_detail.to_excel(writer, index=False, sheet_name=t_dict["sheet1_name"])
+        category_summary.to_excel(writer, index=False, sheet_name=t_dict["sheet2_name"])
         
-        # 样式定义
         header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
-        header_font = Font(name="微软雅黑", size=11, bold=True, color="FFFFFF")
+        header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
         total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
-        total_font = Font(name="微软雅黑", size=11, bold=True, color="000000")
-        regular_font = Font(name="微软雅黑", size=10)
+        total_font = Font(name="Calibri", size=11, bold=True, color="000000")
+        regular_font = Font(name="Calibri", size=10)
         
         thin_border = Border(
-            left=Side(style='thin', color='D3D3D3'),
-            right=Side(style='thin', color='D3D3D3'),
-            top=Side(style='thin', color='D3D3D3'),
-            bottom=Side(style='thin', color='D3D3D3')
+            left=Side(style='thin', color='D3D3D3'), right=Side(style='thin', color='D3D3D3'),
+            top=Side(style='thin', color='D3D3D3'), bottom=Side(style='thin', color='D3D3D3')
         )
         double_bottom_border = Border(
-            left=Side(style='thin', color='D3D3D3'),
-            right=Side(style='thin', color='D3D3D3'),
-            top=Side(style='thin', color='000000'),
-            bottom=Side(style='double', color='000000')
+            left=Side(style='thin', color='D3D3D3'), right=Side(style='thin', color='D3D3D3'),
+            top=Side(style='thin', color='000000'), bottom=Side(style='double', color='000000')
         )
 
-        # 格式化 Sheet 1：发票收据明细
-        ws1 = writer.sheets["发票收据明细"]
+        ws1 = writer.sheets[t_dict["sheet1_name"]]
         for col in range(1, ws1.max_column + 1):
             cell = ws1.cell(row=1, column=col)
             cell.fill = header_fill
@@ -246,8 +488,7 @@ def create_formatted_excel(df: pd.DataFrame) -> bytes:
             col_letter = get_column_letter(col[0].column)
             ws1.column_dimensions[col_letter].width = max(max_len + 8, 16)
 
-        # 格式化 Sheet 2：分类统计汇总
-        ws2 = writer.sheets["分类统计汇总"]
+        ws2 = writer.sheets[t_dict["sheet2_name"]]
         for col in range(1, ws2.max_column + 1):
             cell = ws2.cell(row=1, column=col)
             cell.fill = header_fill
@@ -268,12 +509,12 @@ def create_formatted_excel(df: pd.DataFrame) -> bytes:
         for col in ws2.columns:
             max_len = max(len(str(cell.value or '')) for cell in col)
             col_letter = get_column_letter(col[0].column)
-            ws2.column_dimensions[col_letter].width = max(max_len + 8, 20)
+            ws2.column_dimensions[col_letter].width = max(max_len + 8, 22)
 
     return excel_buffer.getvalue()
 
 # ================= 📄 第三步：App 核心业务功能 =================
-st.title("📄 AI 多功能文件与发票助手")
+st.title(T["app_title"])
 
 users = get_all_users()
 current_user = st.session_state["current_user"]
@@ -294,14 +535,14 @@ if user_data:
             pass
 
     remaining_quota = max(0, user_data["daily_limit"] - user_data["used_today"])
-    st.caption(f"👤 当前账号：`{current_user}` ｜ 今日剩余可用额度：**{remaining_quota} / {user_data['daily_limit']}** 次")
+    st.caption(f"👤 `{current_user}` ｜ {T['quota_label']} **{remaining_quota} / {user_data['daily_limit']}**")
 else:
-    st.caption(f"👤 当前账号：`{current_user}` ｜ 今日剩余可用额度：**{remaining_quota}** 次")
+    st.caption(f"👤 `{current_user}` ｜ {T['quota_label']} **{remaining_quota}**")
 
-st.warning("⚠️ 手机端温馨提示：为防止手机直接拍照导致网页刷新，建议您【先用手机相机拍好文件】，再点击下方按钮前往【相册】选取上传！")
+st.warning(T["phone_tip"])
 
 uploaded_files = st.file_uploader(
-    "📷 选择单张或多张文件/发票（支持单次多选）", 
+    T["upload_label"], 
     type=["jpg", "jpeg", "png", "pdf"], 
     accept_multiple_files=True
 )
@@ -309,89 +550,83 @@ uploaded_files = st.file_uploader(
 ai_contents = []
 
 if uploaded_files:
-    st.success(f"已成功读取 {len(uploaded_files)} 个文件！")
+    st.success(T["read_success"].format(len(uploaded_files)))
     for i, uploaded_file in enumerate(uploaded_files):
         file_type = uploaded_file.name.split(".")[-1].lower()
         file_bytes = uploaded_file.read()
         
         if file_type == "pdf":
             ai_contents.append(types.Part.from_bytes(data=file_bytes, mime_type="application/pdf"))
-            st.info(f"📁 已载入 PDF: {uploaded_file.name}")
+            st.info(f"📁 {uploaded_file.name}")
         else:
             compressed_bytes = compress_image(file_bytes)
             ai_contents.append(types.Part.from_bytes(data=compressed_bytes, mime_type="image/jpeg"))
             try:
                 preview_img = PIL.Image.open(io.BytesIO(compressed_bytes))
-                st.image(preview_img, width=200, caption=f"📷 文件第 {i+1} 页: {uploaded_file.name}")
+                st.image(preview_img, width=200, caption=T["file_page"].format(i+1, uploaded_file.name))
             except Exception:
-                st.info(f"📷 已载入图片: {uploaded_file.name}")
+                st.info(f"📷 {uploaded_file.name}")
 
 if ai_contents:
     file_mode = st.selectbox(
-        "🔮 请选择文件类型：", 
-        ["🧾 车辆/商业发票收据 (支持批量导出Excel)", "🏥 肾移植复诊报告", "📄 商业合同与通用文件", "✍️ 自由输入/其他全新文件"]
+        T["file_type_label"], 
+        [T["mode_receipt"], T["mode_medical"], T["mode_contract"], T["mode_custom"]]
     )
     
-    user_baseline_prompt = ""
-    if file_mode == "🏥 肾移植复诊报告":
-        baseline_option = st.selectbox(
-            "🩸 请选择您个人的【血清肌酐（Creatinine）长期稳定基线值】(以您医生的医嘱为准)：",
-            [
-                "🟢 正常健康人群或非常优秀的基线 (60 - 110 umol/L)",
-                "🟡 相对平稳的轻度基线 (110 - 130 umol/L)",
-                "🟠 常见的中度稳定基线 (130 - 160 umol/L)",
-                "🟣 偏高的稳定基线 (160 - 210 umol/L)",
-                "⚪ 其他基线（可在下方提问框中自行修改具体数值）"
-            ],
-            index=3
-        )
-        user_baseline_prompt = f"我是一名肾移植患者，我个人的血清肌酐（Creatinine）长期基础稳定值大约保持在【{baseline_option}】。\n"
+    # 动态匹配提示词语言
+    lang_instruction = "请使用简体中文回答。"
+    if "English" in selected_lang:
+        lang_instruction = "Please respond in English."
+    elif "Melayu" in selected_lang:
+        lang_instruction = "Sila berikan jawapan dalam Bahasa Melayu."
+
+    if file_mode == T["mode_medical"]:
         default_prompt = (
-            f"{user_baseline_prompt}"
-            "请帮我严格提取并整理化验单关键信息：\n"
-            "1. 肌酐（Creat）、尿素（Urea）、血红蛋白（Hb）等核心数值，用Markdown表格列出并附参考值。\n"
-            "2. 对比我选定的基线，评估当前数值是否平稳？\n"
-            "3. 给出水分摄入、饮食及自我监测提示。"
+            f"{lang_instruction}\n"
+            "化验单关键信息提取任务：\n"
+            "1. 提取肌酐（Creatinine）、尿素（Urea）、血红蛋白（Hb）核心数值，用Markdown表格列出并附参考值。\n"
+            "2. 评估当前指标状态与健康注意事项。"
         )
-    elif "发票收据" in file_mode:
+    elif file_mode == T["mode_receipt"]:
         default_prompt = (
-            "请分析我上传的发票/收据单据（可能包含一张或多张单据）。\n"
+            f"{lang_instruction}\n"
+            "请分析我上传的发票/收据单据（可能包含单张或多张）。\n"
             "【任务 1】：输出清晰的人类易读文字总结（包括商户、明细、金额总计）。\n"
-            "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须包括：\n"
+            "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须严格对应如下格式：\n"
             "[\n"
             "  {\n"
-            "    \"date\": \"单据日期 (YYYY-MM-DD)\",\n"
-            "    \"merchant\": \"商家名称\",\n"
-            "    \"category\": \"类别 (如: 添油/餐饮/修车/办公/日常)\",\n"
-            "    \"invoice_no\": \"单据/发票号码 (无则填 -)\",\n"
+            "    \"date\": \"YYYY-MM-DD\",\n"
+            "    \"merchant\": \"Merchant Name\",\n"
+            "    \"category\": \"Category (e.g., Petrol / Dining / Repair / Office)\",\n"
+            "    \"invoice_no\": \"Receipt/Invoice No\",\n"
             "    \"tax_amount\": 0.00,\n"
             "    \"total_amount\": 0.00\n"
             "  }\n"
             "]"
         )
-    elif file_mode == "📄 商业合同与通用文件":
+    elif file_mode == T["mode_contract"]:
         default_prompt = (
-            "请提取整理文件核心信息：\n"
-            "1. 文件主题与核心条款？\n"
-            "2. 关键日期（签署/到期）？\n"
-            "3. 签约主体及地点？\n"
-            "4. 联络方式？"
+            f"{lang_instruction}\n"
+            "提取整理文件核心信息：\n"
+            "1. 核心条款与主题？\n"
+            "2. 关键日期与主体？\n"
+            "3. 核心责任与风险点？"
         )
     else:
-        default_prompt = "请根据我上传的文件，分析核心信息并总结要点\n1."
+        default_prompt = f"{lang_instruction}\nAnalyze core information and summarize points:"
 
     user_prompt = st.text_area(
-        "💬 您想对 AI 提问什么？（可直接修改或补充）", 
+        T["prompt_label"], 
         value=default_prompt,
         height=160
     )
 
-    if st.button("🚀 开始 AI 深度分析", type="primary", use_container_width=True):
+    if st.button(T["btn_start_analysis"], type="primary", use_container_width=True):
         if remaining_quota <= 0:
-            st.error("⚠️ 您今日的免费额度已用尽！请明日再来，或联系客服开通无限次通道。")
+            st.error(T["quota_exhausted"])
             st.stop()
 
-        with st.spinner("AI 正在深度分析中，请稍候..."):
+        with st.spinner(T["analyzing"]):
             final_inputs = [*ai_contents, user_prompt]
             success = False
             
@@ -405,7 +640,6 @@ if ai_contents:
                     raw_text = response.text
                     st.session_state["analysis_result"] = raw_text
                     
-                    # 尝试解析 JSON 发票数据
                     st.session_state["invoice_df"] = None
                     json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
                     if json_match:
@@ -414,27 +648,28 @@ if ai_contents:
                             if isinstance(json_data, list) and len(json_data) > 0:
                                 df = pd.DataFrame(json_data)
                                 rename_map = {
-                                    "date": "日期",
-                                    "merchant": "商家名称",
-                                    "category": "分类",
-                                    "invoice_no": "单据号码",
-                                    "tax_amount": "税额 (SST)",
-                                    "total_amount": "总金额 (Total)"
+                                    "date": T["col_date"],
+                                    "merchant": T["col_merchant"],
+                                    "category": T["col_category"],
+                                    "invoice_no": T["col_invoice"],
+                                    "tax_amount": T["col_tax"],
+                                    "total_amount": T["col_total"]
                                 }
                                 df = df.rename(columns=rename_map)
-                                df["税额 (SST)"] = pd.to_numeric(df["税额 (SST)"], errors="coerce").fillna(0.0)
-                                df["总金额 (Total)"] = pd.to_numeric(df["总金额 (Total)"], errors="coerce").fillna(0.0)
+                                df[T["col_tax"]] = pd.to_numeric(df[T["col_tax"]], errors="coerce").fillna(0.0)
+                                df[T["col_total"]] = pd.to_numeric(df[T["col_total"]], errors="coerce").fillna(0.0)
                                 st.session_state["invoice_df"] = df
                         except Exception:
                             pass
                     
-                    # 语音生成
+                    # 语音生成：使用对应语言的高品质音色
                     try:
                         clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
                         clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
                         
+                        target_voice = T["tts_voice"]
                         async def generate_voice_data(text_to_read: str) -> bytes:
-                            communicator = edge_tts.Communicate(text_to_read, "zh-CN-YunxiNeural")
+                            communicator = edge_tts.Communicate(text_to_read, target_voice)
                             audio_stream = b""
                             async for chunk in communicator.stream():
                                 if chunk["type"] == "audio":
@@ -447,7 +682,6 @@ if ai_contents:
                     except Exception:
                         pass
                     
-                    # 扣减用户额度
                     if user_data and "row" in user_data:
                         try:
                             sheet = get_user_sheet()
@@ -467,11 +701,11 @@ if ai_contents:
                         if attempt < len(clients) - 1:
                             continue
                         else:
-                            st.error(f"⚠️ 当前 API Key 频次达到上限。详细信息: {err_msg}")
+                            st.error(f"⚠️ API Key Quota Limit: {err_msg}")
                     elif "503" in err_msg or "UNAVAILABLE" in err_msg:
-                        st.error("⚠️ AI 服务端短暂繁忙，请重新点击提交。")
+                        st.error("⚠️ AI server busy, please try again.")
                     else:
-                        st.error(f"分析失败: {err_msg}")
+                        st.error(f"Error: {err_msg}")
                         break
 
 # ================= 🟢 第四步：展示结果与下载 Excel =================
@@ -490,59 +724,53 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
         st.session_state["clear_clipboard_trigger"] = False
 
     st.divider()
-    st.subheader("📊 AI 分析与提取结果")
+    st.subheader(T["res_header"])
     
-    # 🌟 核心亮点：可直接编辑的表格 + 分类汇总看板 + 导出 Excel
     if st.session_state.get("invoice_df") is not None:
         df = st.session_state["invoice_df"]
+        st.info(T["edit_tip"])
         
-        st.info("💡 **提示**：您可以直接**双击下方表格中的任何单元格**修改金额、店名或分类，下载的 Excel 将自动以您修改后的最新数据为准！")
-        
-        # 允许用户在线自由编辑
         edited_df = st.data_editor(
             df,
             use_container_width=True,
             num_rows="dynamic",
             column_config={
-                "税额 (SST)": st.column_config.NumberColumn(format="RM %.2f"),
-                "总金额 (Total)": st.column_config.NumberColumn(format="RM %.2f"),
+                T["col_tax"]: st.column_config.NumberColumn(format="RM %.2f"),
+                T["col_total"]: st.column_config.NumberColumn(format="RM %.2f"),
             },
             key="invoice_editor"
         )
         
-        # 实时计算用户编辑后的分类汇总
-        edited_df["总金额 (Total)"] = pd.to_numeric(edited_df["总金额 (Total)"], errors="coerce").fillna(0.0)
-        edited_df["税额 (SST)"] = pd.to_numeric(edited_df["税额 (SST)"], errors="coerce").fillna(0.0)
+        edited_df[T["col_total"]] = pd.to_numeric(edited_df[T["col_total"]], errors="coerce").fillna(0.0)
+        edited_df[T["col_tax"]] = pd.to_numeric(edited_df[T["col_tax"]], errors="coerce").fillna(0.0)
         
-        cat_group = edited_df.groupby("分类")["总金额 (Total)"].sum().reset_index()
+        cat_group = edited_df.groupby(T["col_category"])[T["col_total"]].sum().reset_index()
         
-        # 页面展示轻量化分类看板
-        st.write("📈 **分类开销汇总看板**：")
+        st.write(T["cat_board"])
         cols = st.columns(len(cat_group) if len(cat_group) > 0 else 1)
         for idx, row_cat in cat_group.iterrows():
             with cols[idx % len(cols)]:
-                st.metric(label=f"🏷️ {row_cat['分类']}", value=f"RM {row_cat['总金额 (Total)']:.2f}")
+                st.metric(label=f"🏷️ {row_cat[T['col_category']]}", value=f"RM {row_cat[T['col_total']]:.2f}")
 
-        # 基于用户修改后的最新数据生成 Excel
-        excel_data = create_formatted_excel(edited_df)
+        excel_data = create_formatted_excel(edited_df, T)
         
         def notify_excel_download():
-            st.toast("✅ Excel 报表已成功下载！", icon="📥")
+            st.toast(T["excel_downloaded"], icon="📥")
 
         st.download_button(
-            label="📥 立即下载 Excel 记账汇总表 (.xlsx)",
+            label=T["btn_dl_excel"],
             data=excel_data,
-            file_name=f"发票报销汇总_{datetime.date.today()}.xlsx",
+            file_name=f"Expenses_Report_{datetime.date.today()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
             on_click=notify_excel_download,
             use_container_width=True
         )
-        st.caption("💡 文件已保存至您手机/电脑的【下载 (Downloads)】文件夹中。")
+        st.caption(T["excel_path_tip"])
         st.write("")
 
     if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
-        st.write("🎵 **语音朗读报告**：")
+        st.write(T["voice_title"])
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
         st.write("")
     
@@ -550,57 +778,57 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.markdown(display_text)
     
     st.divider()
-    st.subheader("📲 结果快捷分享通道")
+    st.subheader(T["share_header"])
     
     share_type = st.radio(
-        "📌 请选择您希望分享到 WhatsApp 的内容类型：",
-        options=["📝 发送文字报告", "🎵 发送语音报告 (MP3)"],
+        T["share_radio_lbl"],
+        options=[T["share_opt_text"], T["share_opt_voice"]],
         horizontal=True,
         key="share_type_radio"
     )
     
     with st.form("whatsapp_form", clear_on_submit=False):
-        st.info("💡 步骤一：输入接收人电话并锁定：")
-        target_phone = st.text_input("📞 接收人电话 (选填，例如: 60123456789，留空则手动选择):", value="")
-        lock_button = st.form_submit_button("🔒 锁定号码并生成通道", use_container_width=True)
+        st.info(T["wa_step1"])
+        target_phone = st.text_input(T["wa_phone_lbl"], value="")
+        lock_button = st.form_submit_button(T["wa_btn_lock"], use_container_width=True)
         
         if lock_button:
             clean_phone = target_phone.strip().replace("+", "").replace(" ", "").replace("\t", "").replace("\n", "")
             if clean_phone:
                 st.session_state["wa_url"] = f"https://wa.me/{clean_phone}"
-                st.success(f"✅ 号码 {clean_phone} 锁定成功！")
+                st.success(T["wa_lock_ok"].format(clean_phone))
             else:
                 st.session_state["wa_url"] = "https://wa.me/"
-                st.success("✅ 已锁定为空号模式！")
+                st.success(T["wa_lock_empty"])
 
     st.write("")
 
-    if share_type == "📝 发送文字报告":
-        st.write("📋 **步骤二**：点击下方复制文本报告：")
+    if share_type == T["share_opt_text"]:
+        st.write(T["wa_step2_txt"])
         st_copy_to_clipboard(
             display_text, 
-            before_copy_label="📋 点击此处 ➡️ 一键复制 AI 分析文本", 
-            after_copy_label="🎉 复制成功！请前往 WhatsApp 粘贴发送！"
+            before_copy_label=T["btn_copy"], 
+            after_copy_label=T["copy_ok"]
         )
         
-    elif share_type == "🎵 发送语音报告 (MP3)":
+    elif share_type == T["share_opt_voice"]:
         if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
-            st.write("💾 **步骤二**：点击下方下载语音文件：")
+            st.write(T["wa_step2_voice"])
             
             def notify_voice_download():
-                st.toast("✅ 语音文件已下载至 Downloads 文件夹！", icon="🎵")
+                st.toast(T["voice_downloaded"], icon="🎵")
 
             st.download_button(
-                label="⬇️ 下载语音文件 (voice_report.mp3)",
+                label=T["btn_dl_voice"],
                 data=st.session_state["audio_bytes"],
                 file_name="voice_report.mp3",
                 mime="audio/mp3",
                 on_click=notify_voice_download,
                 use_container_width=True
             )
-            st.caption("💡 提示：下载后打开 WhatsApp，在聊天框点击 📎 附件选择该 MP3 发送即可。")
+            st.caption(T["voice_tip"])
         else:
-            st.warning("⚠️ 当前暂无语音数据。")
+            st.warning("⚠️ No audio data.")
 
     if "wa_url" in st.session_state and st.session_state["wa_url"]:
         whatsapp_btn_html = f"""
@@ -617,6 +845,6 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
             border-radius: 8px; 
             margin-top: 20px; 
             box-shadow: 0px 4px 10px rgba(37,211,102,0.3);
-        ">🟢 步骤三：点击前往 WhatsApp</a>
+        ">{T['wa_step3']}</a>
         """
         st.markdown(whatsapp_btn_html, unsafe_allow_html=True)
