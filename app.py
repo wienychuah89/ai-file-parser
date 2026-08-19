@@ -5,15 +5,18 @@ from google.genai import types
 import PIL.Image
 import io
 import os
+import re
+import json
 import asyncio
 import datetime
+import pandas as pd
 import edge_tts
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from st_copy_to_clipboard import st_copy_to_clipboard
 
 # 1. 页面基本配置
-st.set_page_config(page_title="AI 文件分析器", layout="centered")
+st.set_page_config(page_title="AI 文件与发票助手", layout="centered")
 
 # ==========================================
 # 📱 针对超长屏与移动端的样式优化
@@ -79,7 +82,6 @@ def get_all_users():
                 "last_date": str(r.get("last_date", "")).strip()
             }
             users_dict[raw_u] = user_entry
-            # 兼容前导 0
             if raw_u.startswith("0"):
                 users_dict[raw_u.lstrip("0")] = user_entry
             else:
@@ -107,7 +109,15 @@ if not st.session_state["authenticated"]:
                 clean_u = login_u.strip()
                 clean_p = login_p.strip()
                 
-                if clean_u in users and str(users[clean_u]["password"]).strip() == clean_p:
+                matched_user = None
+                if clean_u in users:
+                    matched_user = users[clean_u]
+                elif clean_u.lstrip("0") in users:
+                    matched_user = users[clean_u.lstrip("0")]
+                elif f"0{clean_u}" in users:
+                    matched_user = users[f"0{clean_u}"]
+                
+                if matched_user and str(matched_user["password"]).strip() == clean_p:
                     st.session_state["authenticated"] = True
                     st.session_state["current_user"] = clean_u
                     st.success("✅ 登录成功！")
@@ -115,38 +125,32 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error("❌ 用户名或密码错误！")
                     
-    #with tab_register:
-        #st.info("💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！")
-        #reg_u = st.text_input("📞 输入您的手机号（作为账号）：", key="reg_username")
-        #reg_p = st.text_input("🔑 设置访问密码：", type="password", key="reg_password")
-        #reg_p2 = st.text_input("🔑 确认访问密码：", type="password", key="reg_password2")
-        
-        #if st.button("提交注册并自动登录", use_container_width=True):
-            #clean_reg_u = reg_u.strip()
-            #clean_reg_p = reg_p.strip()
-            #if not clean_reg_u or not clean_reg_p:
-                #st.warning("⚠️ 手机号和密码不能为空！")
-            #elif clean_reg_p != reg_p2.strip():
-                #st.warning("⚠️ 两次输入的密码不一致！")
-            #else:
-                #with st.spinner("正在注册中..."):
-                    #users = get_all_users()
-                    #if clean_reg_u in users:
-                        #st.warning("⚠️ 该账号已被注册，请直接前往登录！")
-                    #else:
-                        #sheet = get_user_sheet()
-                        #today_str = str(datetime.date.today())
-                        ## 强制以纯文本写入 Google Sheet
-                        #sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
-                        #st.session_state["authenticated"] = True
-                        #st.session_state["current_user"] = clean_reg_u
-                        #st.success("🎉 注册成功！已为您自动登录。")
-                        #st.rerun()
-    #st.stop()
     with tab_register:
-        st.info("🚧 **系统升级维护中**")
-        st.warning("⚠️ 为了提供更优质的发票汇总功能，新用户注册通道暂时关闭升级。")
-        st.caption("💡 已有账号的用户可直接切换到【用户登录】正常使用。预计很快恢复注册，敬请期待！")
+        st.info("💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！")
+        reg_u = st.text_input("📞 输入您的手机号或用户名：", key="reg_username")
+        reg_p = st.text_input("🔑 设置访问密码：", type="password", key="reg_password")
+        reg_p2 = st.text_input("🔑 确认访问密码：", type="password", key="reg_password2")
+        
+        if st.button("提交注册并自动登录", use_container_width=True):
+            clean_reg_u = reg_u.strip()
+            clean_reg_p = reg_p.strip()
+            if not clean_reg_u or not clean_reg_p:
+                st.warning("⚠️ 用户名和密码不能为空！")
+            elif clean_reg_p != reg_p2.strip():
+                st.warning("⚠️ 两次输入的密码不一致！")
+            else:
+                with st.spinner("正在注册中..."):
+                    users = get_all_users()
+                    if clean_reg_u in users:
+                        st.warning("⚠️ 该账号已被注册，请直接前往登录！")
+                    else:
+                        sheet = get_user_sheet()
+                        today_str = str(datetime.date.today())
+                        sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
+                        st.session_state["authenticated"] = True
+                        st.session_state["current_user"] = clean_reg_u
+                        st.success("🎉 注册成功！已为您自动登录。")
+                        st.rerun()
     st.stop()
 # =============================================================
 
@@ -181,23 +185,21 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
         return image_bytes
 
 # ================= 📄 第三步：App 核心业务功能 =================
-st.title("📄 AI 多功能文件分析器")
+st.title("📄 AI 多功能文件与发票助手")
 
-# 查询与展示当前用户的额度（带安全默认值）
 users = get_all_users()
 current_user = st.session_state["current_user"]
 user_data = users.get(current_user, None)
 
 today_str = str(datetime.date.today())
-remaining_quota = 2  # 默认兜底
+remaining_quota = 2
 
 if user_data:
-    # 隔日自动重置计数器
     if user_data["last_date"] != today_str:
         try:
             sheet = get_user_sheet()
-            sheet.update_cell(user_data["row"], 4, 0)         # used_today = 0
-            sheet.update_cell(user_data["row"], 5, today_str) # last_date = today
+            sheet.update_cell(user_data["row"], 4, 0)
+            sheet.update_cell(user_data["row"], 5, today_str)
             user_data["used_today"] = 0
             user_data["last_date"] = today_str
         except Exception:
@@ -211,7 +213,7 @@ else:
 st.warning("⚠️ 手机端温馨提示：为防止手机直接拍照导致网页刷新，建议您【先用手机相机拍好文件】，再点击下方按钮前往【相册】选取上传！")
 
 uploaded_files = st.file_uploader(
-    "📷 选择文件（支持单次多选）", 
+    "📷 选择单张或多张文件/发票（支持单次多选）", 
     type=["jpg", "jpeg", "png", "pdf"], 
     accept_multiple_files=True
 )
@@ -239,7 +241,7 @@ if uploaded_files:
 if ai_contents:
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
-        ["✍️ 自由输入/其他全新文件", "🧾 车辆/商业发票收据", "📄 商业合同与通用文件", "🏥 肾移植复诊报告"]
+        ["🧾 车辆/商业发票收据 (支持批量导出Excel)", "🏥 肾移植复诊报告", "📄 商业合同与通用文件", "✍️ 自由输入/其他全新文件"]
     )
     
     user_baseline_prompt = ""
@@ -263,13 +265,21 @@ if ai_contents:
             "2. 对比我选定的基线，评估当前数值是否平稳？\n"
             "3. 给出水分摄入、饮食及自我监测提示。"
         )
-    elif file_mode == "🧾 车辆/商业发票收据":
+    elif "发票收据" in file_mode:
         default_prompt = (
-            "请提取整理发票/收据中的关键信息：\n"
-            "1. 商家名称与地址？\n"
-            "2. 消费总金额（Total）？\n"
-            "3. 核心服务项目或配件明细？\n"
-            "4. 日期及联络人？"
+            "请分析我上传的发票/收据单据（可能包含一张或多张单据）。\n"
+            "【任务 1】：输出清晰的人类易读文字总结（包括商户、明细、金额总计）。\n"
+            "【任务 2 极为重要】：在回答的最末尾，输出一个用 ```json 与 ``` 包裹的标准 JSON 数组，包含所有单据的结构化数据，字段必须包括：\n"
+            "[\n"
+            "  {\n"
+            "    \"date\": \"单据日期 (YYYY-MM-DD)\",\n"
+            "    \"merchant\": \"商家名称\",\n"
+            "    \"category\": \"类别 (如: 添油/餐饮/修车/办公/日常)\",\n"
+            "    \"invoice_no\": \"单据/发票号码 (无则填 -)\",\n"
+            "    \"tax_amount\": 0.00,\n"
+            "    \"total_amount\": 0.00\n"
+            "  }\n"
+            "]"
         )
     elif file_mode == "📄 商业合同与通用文件":
         default_prompt = (
@@ -304,10 +314,37 @@ if ai_contents:
                         model='gemini-3.6-flash',
                         contents=final_inputs
                     )
-                    st.session_state["analysis_result"] = response.text
+                    raw_text = response.text
+                    st.session_state["analysis_result"] = raw_text
                     
+                    # 尝试解析 JSON 发票数据
+                    st.session_state["invoice_df"] = None
+                    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
+                    if json_match:
+                        try:
+                            json_data = json.loads(json_match.group(1).strip())
+                            if isinstance(json_data, list) and len(json_data) > 0:
+                                df = pd.DataFrame(json_data)
+                                # 重命名为中文友好表头
+                                rename_map = {
+                                    "date": "日期",
+                                    "merchant": "商家名称",
+                                    "category": "分类",
+                                    "invoice_no": "单据号码",
+                                    "tax_amount": "税额 (SST)",
+                                    "total_amount": "总金额 (Total)"
+                                }
+                                df = df.rename(columns=rename_map)
+                                st.session_state["invoice_df"] = df
+                        except Exception:
+                            pass
+                    
+                    # 语音生成
                     try:
-                        clean_text = response.text.replace("*", "").replace("#", "").replace("`", "").strip()
+                        # 朗读前去掉 json 代码块，避免把代码也念出来
+                        clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
+                        clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
+                        
                         async def generate_voice_data(text_to_read: str) -> bytes:
                             communicator = edge_tts.Communicate(text_to_read, "zh-CN-YunxiNeural")
                             audio_stream = b""
@@ -316,7 +353,7 @@ if ai_contents:
                                     audio_stream += chunk["data"]
                             return audio_stream
                         
-                        audio_data = asyncio.run(generate_voice_data(clean_text))
+                        audio_data = asyncio.run(generate_voice_data(clean_voice_text))
                         if audio_data:
                             st.session_state["audio_bytes"] = audio_data
                     except Exception:
@@ -349,7 +386,7 @@ if ai_contents:
                         st.error(f"分析失败: {err_msg}")
                         break
 
-# ================= 🟢 第四步：一键复制与 WhatsApp 分享 =================
+# ================= 🟢 第四步：展示结果与下载 Excel =================
 if "analysis_result" in st.session_state and st.session_state["analysis_result"]:
     if st.session_state.get("clear_clipboard_trigger", False):
         st.markdown(
@@ -365,14 +402,38 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
         st.session_state["clear_clipboard_trigger"] = False
 
     st.divider()
-    st.subheader("📊 AI 分析结果")
+    st.subheader("📊 AI 分析与提取结果")
     
+    # 🌟 核心亮点：如果识别出发票表格，展示并提供 Excel 下载
+    if st.session_state.get("invoice_df") is not None:
+        df = st.session_state["invoice_df"]
+        st.success("🎉 已为您自动提取发票结构化明细表：")
+        st.dataframe(df, use_container_width=True)
+        
+        # 转换为标准 Excel 二进制流
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name="发票收据汇总")
+        excel_data = excel_buffer.getvalue()
+        
+        st.download_button(
+            label="📥 立即下载 Excel 记账汇总表 (.xlsx)",
+            data=excel_data,
+            file_name=f"发票报销汇总_{datetime.date.today()}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            type="primary",
+            use_container_width=True
+        )
+        st.write("")
+
     if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
         st.write("🎵 **语音朗读报告**：")
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
         st.write("")
     
-    st.markdown(st.session_state["analysis_result"])
+    # 显示纯文本部分（隐藏末尾生硬的 json 块，提供给用户最优雅的排版）
+    display_text = re.sub(r"```json[\s\S]*?```", "", st.session_state["analysis_result"]).strip()
+    st.markdown(display_text)
     
     st.divider()
     st.subheader("📲 结果快捷分享通道")
@@ -403,7 +464,7 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     if share_type == "📝 发送文字报告":
         st.write("📋 **步骤二**：点击下方复制文本报告：")
         st_copy_to_clipboard(
-            st.session_state["analysis_result"], 
+            display_text, 
             before_copy_label="📋 点击此处 ➡️ 一键复制 AI 分析文本", 
             after_copy_label="🎉 复制成功！请前往 WhatsApp 粘贴发送！"
         )
