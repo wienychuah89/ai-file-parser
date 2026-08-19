@@ -51,7 +51,7 @@ A powerful, mobile-friendly **AI Document Analysis & Receipt-to-Excel Web App** 
 ## 🚀 Live Demo / 在线体验
 
 Try the live application here:  
-👉 **[Launch AI Assistant on Streamlit Community Cloud](https://share.streamlit.io)** *(Replace with your actual app URL)*
+👉 **[Launch AI Assistant on Streamlit Community Cloud](https://share.streamlit.io)** *(https://ai-file-parser-zs7bww3nlt4gbbjxwqz2rv.streamlit.app/)*
 
 ---
 
@@ -59,5 +59,5 @@ Try the live application here:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/your-username/ai-file-parser.git](https://github.com/your-username/ai-file-parser.git)
+   git clone [https://github.com/your-username/ai-file-parser.git](https://github.com/wienychuah89/ai-file-parser.git)
    cd ai-file-parser
