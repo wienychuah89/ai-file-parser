@@ -6,7 +6,10 @@ import PIL.Image
 import io
 import os
 import asyncio
+import datetime
 import edge_tts
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 from st_copy_to_clipboard import st_copy_to_clipboard
 
 # 1. 页面基本配置
@@ -18,7 +21,6 @@ st.set_page_config(page_title="AI 文件分析器", layout="centered")
 st.markdown(
     """
     <style>
-    /* 隐藏顶部组件 */
     [data-testid="stHeader"], [data-testid="stAppDeployButton"], header, .stAppHeader, a[href*="github.com"] {
         display: none !important;
         visibility: hidden !important;
@@ -27,7 +29,6 @@ st.markdown(
         margin: 0px !important;
     }
     
-    /* 容器自适应 */
     [data-testid="stAppViewBlockContainer"], .main .block-container, div.block-container {
         padding-top: 0.5rem !important;  
         padding-bottom: 1rem !important;
@@ -49,21 +50,84 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ================= 🔒 第一步：智能访问密码锁 =================
-PASSWORD = st.secrets.get("APP_PASSWORD", "112234455") 
+# ================= 📊 Google Sheets 数据库连接层 =================
+@st.cache_resource
+def get_gspread_client():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    return gspread.authorize(creds)
 
+def get_user_sheet():
+    client = get_gspread_client()
+    return client.open_by_url(st.secrets["GSHEET_URL"]).sheet1
+
+def get_all_users():
+    sheet = get_user_sheet()
+    records = sheet.get_all_records()
+    users_dict = {}
+    for idx, r in enumerate(records, start=2): # 从第2行开始（避开表头）
+        users_dict[str(r["username"])] = {
+            "row": idx,
+            "password": str(r["password"]),
+            "daily_limit": int(r["daily_limit"]),
+            "used_today": int(r["used_today"]),
+            "last_date": str(r["last_date"])
+        }
+    return users_dict
+
+# ================= 🔒 第一步：用户登录与自主注册系统 =================
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
+    st.session_state["current_user"] = None
 
 if not st.session_state["authenticated"]:
-    st.title("🔒 系统登录")
-    user_password = st.text_input("🔑 请输入访问密码：", type="password")
-    if st.button("登录", type="primary", use_container_width=True):
-        if user_password == PASSWORD:
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else:
-            st.error("❌ 密码错误，拒绝访问！")
+    st.title("🔐 AI 分析器用户通道")
+    
+    tab_login, tab_register = st.tabs(["🔑 用户登录", "📝 新用户注册"])
+    
+    with tab_login:
+        login_u = st.text_input("📞 手机号 / 用户名：", key="login_username")
+        login_p = st.text_input("🔑 密码：", type="password", key="login_password")
+        if st.button("立即登录", type="primary", use_container_width=True):
+            with st.spinner("正在验证..."):
+                users = get_all_users()
+                clean_u = login_u.strip()
+                if clean_u in users and users[clean_u]["password"] == login_p.strip():
+                    st.session_state["authenticated"] = True
+                    st.session_state["current_user"] = clean_u
+                    st.success("✅ 登录成功！")
+                    st.rerun()
+                else:
+                    st.error("❌ 用户名或密码错误！")
+                    
+    with tab_register:
+        st.info("💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！")
+        reg_u = st.text_input("📞 输入您的手机号（作为账号）：", key="reg_username")
+        reg_p = st.text_input("🔑 设置访问密码：", type="password", key="reg_password")
+        reg_p2 = st.text_input("🔑 确认访问密码：", type="password", key="reg_password2")
+        
+        if st.button("提交注册并自动登录", use_container_width=True):
+            clean_reg_u = reg_u.strip()
+            clean_reg_p = reg_p.strip()
+            if not clean_reg_u or not clean_reg_p:
+                st.warning("⚠️ 手机号和密码不能为空！")
+            elif clean_reg_p != reg_p2.strip():
+                st.warning("⚠️ 两次输入的密码不一致！")
+            else:
+                with st.spinner("正在注册中..."):
+                    users = get_all_users()
+                    if clean_reg_u in users:
+                        st.warning("⚠️ 该账号已被注册，请直接前往登录！")
+                    else:
+                        sheet = get_user_sheet()
+                        today_str = str(datetime.date.today())
+                        # 写入 Google Sheet: [username, password, daily_limit, used_today, last_date]
+                        sheet.append_row([clean_reg_u, clean_reg_p, 2, 0, today_str])
+                        st.session_state["authenticated"] = True
+                        st.session_state["current_user"] = clean_reg_u
+                        st.success("🎉 注册成功！已为您自动登录。")
+                        st.rerun()
     st.stop()
 # =============================================================
 
@@ -82,22 +146,15 @@ if not clients:
 
 if "key_index" not in st.session_state:
     st.session_state["key_index"] = 0
-# ====================================================
 
-# 🖼️ 图片体积优化压缩函数（大幅节省 Token 与上传时间）
 def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int = 82) -> bytes:
     try:
         img = PIL.Image.open(io.BytesIO(image_bytes))
-        # 处理手机拍照 EXIF 旋转
         if hasattr(img, '_getexif'):
             img = PIL.ImageOps.exif_transpose(img) if hasattr(PIL, 'ImageOps') else img
-
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
-            
-        # 尺寸等比例缩小
         img.thumbnail((max_dimension, max_dimension), PIL.Image.Resampling.LANCZOS)
-        
         output_io = io.BytesIO()
         img.save(output_io, format="JPEG", quality=quality, optimize=True)
         return output_io.getvalue()
@@ -106,6 +163,24 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
 
 # ================= 📄 第三步：App 核心业务功能 =================
 st.title("📄 AI 多功能文件分析器")
+
+# 查询与展示当前用户的额度
+users = get_all_users()
+current_user = st.session_state["current_user"]
+user_data = users.get(current_user)
+
+today_str = str(datetime.date.today())
+if user_data:
+    # 隔日自动重置计数器
+    if user_data["last_date"] != today_str:
+        sheet = get_user_sheet()
+        sheet.update_cell(user_data["row"], 4, 0)         # used_today = 0
+        sheet.update_cell(user_data["row"], 5, today_str) # last_date = today
+        user_data["used_today"] = 0
+        user_data["last_date"] = today_str
+
+    remaining_quota = max(0, user_data["daily_limit"] - user_data["used_today"])
+    st.caption(f"👤 当前账号：`{current_user}` ｜ 今日剩余可用额度：**{remaining_quota} / {user_data['daily_limit']}** 次")
 
 st.warning("⚠️ 手机端温馨提示：为防止手机直接拍照导致网页刷新，建议您【先用手机相机拍好文件】，再点击下方按钮前往【相册】选取上传！")
 
@@ -127,7 +202,6 @@ if uploaded_files:
             ai_contents.append(types.Part.from_bytes(data=file_bytes, mime_type="application/pdf"))
             st.info(f"📁 已载入 PDF: {uploaded_file.name}")
         else:
-            # 自动优化压缩图片
             compressed_bytes = compress_image(file_bytes)
             ai_contents.append(types.Part.from_bytes(data=compressed_bytes, mime_type="image/jpeg"))
             try:
@@ -136,7 +210,6 @@ if uploaded_files:
             except Exception:
                 st.info(f"📷 已载入图片: {uploaded_file.name}")
 
-# 触发 AI 分析
 if ai_contents:
     file_mode = st.selectbox(
         "🔮 请选择文件类型：", 
@@ -190,6 +263,10 @@ if ai_contents:
     )
 
     if st.button("🚀 开始 AI 深度分析", type="primary", use_container_width=True):
+        if remaining_quota <= 0:
+            st.error("⚠️ 您今日的免费额度已用尽！请明日再来，或联系客服开通无限次通道。")
+            st.stop()
+
         with st.spinner("AI 正在深度分析中，请稍候..."):
             final_inputs = [*ai_contents, user_prompt]
             success = False
@@ -197,17 +274,14 @@ if ai_contents:
             for attempt in range(len(clients)):
                 current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
                 try:
-                    # 使用标准 flash 模型降低 Quota 消耗
                     response = current_client.models.generate_content(
                         model='gemini-3.6-flash',
                         contents=final_inputs
                     )
                     st.session_state["analysis_result"] = response.text
                     
-                    # 微软 edge-tts 内存流直接生成，无需读写磁盘
                     try:
                         clean_text = response.text.replace("*", "").replace("#", "").replace("`", "").strip()
-                        
                         async def generate_voice_data(text_to_read: str) -> bytes:
                             communicator = edge_tts.Communicate(text_to_read, "zh-CN-YunxiNeural")
                             audio_stream = b""
@@ -220,11 +294,13 @@ if ai_contents:
                         if audio_data:
                             st.session_state["audio_bytes"] = audio_data
                     except Exception:
-                        pass # 避免 TTS 异常阻断文本展示
+                        pass
                     
-                    # ⚡ 自动清空剪贴板标记：生成新内容时清空旧剪贴板，防止用户直接粘贴旧数据
+                    # 扣减用户额度：更新 Google Sheet
+                    sheet = get_user_sheet()
+                    sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
+                    
                     st.session_state["clear_clipboard_trigger"] = True
-                    
                     success = True
                     st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
                     st.rerun()
@@ -245,7 +321,6 @@ if ai_contents:
 
 # ================= 🟢 第四步：一键复制与 WhatsApp 分享 =================
 if "analysis_result" in st.session_state and st.session_state["analysis_result"]:
-    # ⚡ 自动清空手机系统剪贴板执行脚本（仅在每次生成新分析后触发一次）
     if st.session_state.get("clear_clipboard_trigger", False):
         st.markdown(
             """
@@ -272,7 +347,6 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.divider()
     st.subheader("📲 结果快捷分享通道")
     
-    # ⚡ 绑定独立 key，防止选项切换时页面重跑导致数据丢失闪退
     share_type = st.radio(
         "📌 请选择您希望分享到 WhatsApp 的内容类型：",
         options=["📝 发送文字报告", "🎵 发送语音报告 (MP3)"],
