@@ -95,6 +95,11 @@ LANG_DICT = {
         "sheet2_col2": "分类汇总金额 (RM)",
         "total_row_label": "总计 (TOTAL)",
         "total_count_label": "共 {} 张单据",
+        # ... 原有字段保持不变 ...
+        "vip_card_title": "💎 升级 VIP 享受无限次极速分析：",
+        "vip_card_desc": "限时特惠仅需 <b>RM 5.90 / 月</b>（每天 50 次深度分析 + 批量导出 Excel）。",
+        "vip_btn_text": "📲 点击联系 WhatsApp 客服开通充值",
+        "wa_msg_template": "你好！我想为账号【{}】充值额度 / 开通 VIP。",
     },
     "🇬🇧 English": {
         "app_title": "📄 AI Multi-Purpose Document & Receipt Assistant",
@@ -166,6 +171,10 @@ LANG_DICT = {
         "sheet2_col2": "Total Amount (RM)",
         "total_row_label": "TOTAL",
         "total_count_label": "Total {} receipts",
+        "vip_card_title": "💎 Upgrade to VIP for Unlimited Deep Analysis:",
+        "vip_card_desc": "Limited offer at only <b>RM 5.90 / month</b> (50 deep analyses/day + batch Excel export).",
+        "vip_btn_text": "📲 Contact WhatsApp Support to Recharge",
+        "wa_msg_template": "Hi! I would like to recharge / upgrade VIP for account [{}].",
     },
     "🇲🇾 Bahasa Melayu": {
         "app_title": "📄 Pembantu AI Dokumen & Resit Pelbagai Guna",
@@ -237,6 +246,10 @@ LANG_DICT = {
         "sheet2_col2": "Jumlah Amaun (RM)",
         "total_row_label": "JUMLAH (TOTAL)",
         "total_count_label": "Sebanyak {} resit",
+        "vip_card_title": "💎 Naik Taraf ke VIP untuk Analisis Tanpa Had:",
+        "vip_card_desc": "Tawaran terhad hanya <b>RM 5.90 / bulan</b> (50 analisis/hari + eksport Excel berkelompok).",
+        "vip_btn_text": "📲 Hubungi WhatsApp Khidmat Pelanggan untuk Tambah Nilai",
+        "wa_msg_template": "Salam! Saya ingin menambah kuota / menaik taraf VIP untuk akaun [{}].",
     }
 }
 
@@ -700,9 +713,37 @@ if ai_contents:
         height=160
     )
     if st.button(T["btn_start_analysis"], type="primary", use_container_width=True):
+        # 🌟 客服 WhatsApp 号码
+        ADMIN_PHONE = "60122382546" 
+        
+        # 根据当前语言构造对应的 WhatsApp 预设文本
+        wa_recharge_msg = T["wa_msg_template"].format(current_user)
+        wa_recharge_url = f"https://wa.me/{ADMIN_PHONE}?text={wa_recharge_msg}"
+        
+        # 当额度耗尽时，直接在界面弹出多语言充值引导卡片
         if remaining_quota <= 0:
             st.error(T["quota_exhausted"])
-            st.stop()
+            st.markdown(
+                f"""
+                <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <p style="color: #721c24; margin: 0 0 10px 0; font-weight: bold;">{T['vip_card_title']}</p>
+                    <p style="color: #721c24; margin: 0 0 12px 0; font-size: 14px;">{T['vip_card_desc']}</p>
+                    <a href="{wa_recharge_url}" target="_blank" style="
+                        display: block;
+                        width: 100%;
+                        text-align: center;
+                        background-color: #25D366;
+                        color: white;
+                        padding: 12px 0px;
+                        font-size: 15px;
+                        font-weight: bold;
+                        text-decoration: none;
+                        border-radius: 6px;
+                    ">{T['vip_btn_text']}</a>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         with st.spinner(T["analyzing"]):
             final_inputs = [*ai_contents, user_prompt]
