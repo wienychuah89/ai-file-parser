@@ -386,7 +386,7 @@ if not st.session_state["authenticated"]:
                     else:
                         sheet = get_user_sheet()
                         today_str = str(datetime.date.today())
-                        sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
+                        sheet.append_row([clean_reg_u, clean_reg_p, 2, 0, today_str], value_input_option="RAW")
                         st.session_state["authenticated"] = True
                         st.session_state["current_user"] = clean_reg_u
                         st.success(T["reg_success"])
