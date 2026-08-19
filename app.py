@@ -713,15 +713,15 @@ if ai_contents:
         height=160
     )
     if st.button(T["btn_start_analysis"], type="primary", use_container_width=True):
-        # 🌟 客服 WhatsApp 号码
+        # 🌟 1. 配置客服 WhatsApp 与充值链接
         ADMIN_PHONE = "60122382546" 
-        
-        # 根据当前语言构造对应的 WhatsApp 预设文本
         wa_recharge_msg = T["wa_msg_template"].format(current_user)
         wa_recharge_url = f"https://wa.me/{ADMIN_PHONE}?text={wa_recharge_msg}"
-        
-        # 当额度耗尽时，直接在界面弹出多语言充值引导卡片
-        if remaining_quota <= 0:
+    
+        is_quota_empty = (remaining_quota <= 0)
+    
+        # 🌟 2. 如果额度用尽，直接在页面上展示红色警示与 VIP 充值卡片
+        if is_quota_empty:
             st.error(T["quota_exhausted"])
             st.markdown(
                 f"""
@@ -744,84 +744,88 @@ if ai_contents:
                 """,
                 unsafe_allow_html=True
             )
-
-        with st.spinner(T["analyzing"]):
-            final_inputs = [*ai_contents, user_prompt]
-            success = False
-            
-            for attempt in range(len(clients)):
-                current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
-                try:
-                    response = current_client.models.generate_content(
-                        model='gemini-3.6-flash',
-                        contents=final_inputs
-                    )
-                    raw_text = response.text
-                    st.session_state["analysis_result"] = raw_text
-                    
-                    st.session_state["invoice_raw_df"] = None
-                    json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
-                    if json_match:
-                        try:
-                            json_data = json.loads(json_match.group(1).strip())
-                            if isinstance(json_data, list) and len(json_data) > 0:
-                                df = pd.DataFrame(json_data)
-                                # 保证标准英文字段存在并做类型转换
-                                for expected_col in ["date", "merchant", "category", "invoice_no", "tax_amount", "total_amount"]:
-                                    if expected_col not in df.columns:
-                                        df[expected_col] = 0.0 if "amount" in expected_col else "-"
-                                
-                                df["tax_amount"] = pd.to_numeric(df["tax_amount"], errors="coerce").fillna(0.0)
-                                df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce").fillna(0.0)
-                                st.session_state["invoice_raw_df"] = df
-                        except Exception:
-                            pass
-                    
-                    # 语音生成
+    
+        # 🌟 3. 单一按钮：没额度时自动变灰禁用（disabled=True）
+        if st.button(T["btn_start_analysis"], type="primary", use_container_width=True, disabled=is_quota_empty):
+            if is_quota_empty:
+                st.stop()
+    
+            with st.spinner(T["analyzing"]):
+                final_inputs = [*ai_contents, user_prompt]
+                success = False
+                
+                for attempt in range(len(clients)):
+                    current_client = clients[(st.session_state["key_index"] + attempt) % len(clients)]
                     try:
-                        clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
-                        clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
+                        response = current_client.models.generate_content(
+                            model='gemini-3.6-flash',
+                            contents=final_inputs
+                        )
+                        raw_text = response.text
+                        st.session_state["analysis_result"] = raw_text
                         
-                        target_voice = T["tts_voice"]
-                        async def generate_voice_data(text_to_read: str) -> bytes:
-                            communicator = edge_tts.Communicate(text_to_read, target_voice)
-                            audio_stream = b""
-                            async for chunk in communicator.stream():
-                                if chunk["type"] == "audio":
-                                    audio_stream += chunk["data"]
-                            return audio_stream
+                        st.session_state["invoice_raw_df"] = None
+                        json_match = re.search(r"```json\s*([\s\S]*?)\s*```", raw_text)
+                        if json_match:
+                            try:
+                                json_data = json.loads(json_match.group(1).strip())
+                                if isinstance(json_data, list) and len(json_data) > 0:
+                                    df = pd.DataFrame(json_data)
+                                    for expected_col in ["date", "merchant", "category", "invoice_no", "tax_amount", "total_amount"]:
+                                        if expected_col not in df.columns:
+                                            df[expected_col] = 0.0 if "amount" in expected_col else "-"
+                                    
+                                    df["tax_amount"] = pd.to_numeric(df["tax_amount"], errors="coerce").fillna(0.0)
+                                    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce").fillna(0.0)
+                                    st.session_state["invoice_raw_df"] = df
+                            except Exception:
+                                pass
                         
-                        audio_data = asyncio.run(generate_voice_data(clean_voice_text))
-                        if audio_data:
-                            st.session_state["audio_bytes"] = audio_data
-                    except Exception:
-                        pass
-                    
-                    if user_data and "row" in user_data:
+                        # 语音生成
                         try:
-                            sheet = get_user_sheet()
-                            sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
+                            clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
+                            clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
+                            
+                            target_voice = T["tts_voice"]
+                            async def generate_voice_data(text_to_read: str) -> bytes:
+                                communicator = edge_tts.Communicate(text_to_read, target_voice)
+                                audio_stream = b""
+                                async for chunk in communicator.stream():
+                                    if chunk["type"] == "audio":
+                                        audio_stream += chunk["data"]
+                                return audio_stream
+                            
+                            audio_data = asyncio.run(generate_voice_data(clean_voice_text))
+                            if audio_data:
+                                st.session_state["audio_bytes"] = audio_data
                         except Exception:
                             pass
-                    
-                    st.session_state["clear_clipboard_trigger"] = True
-                    success = True
-                    st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
-                    st.rerun()
-                    break
-                    
-                except Exception as e:
-                    err_msg = str(e)
-                    if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
-                        if attempt < len(clients) - 1:
-                            continue
-                        else:
-                            st.error(f"⚠️ API Key Quota Limit: {err_msg}")
-                    elif "503" in err_msg or "UNAVAILABLE" in err_msg:
-                        st.error("⚠️ AI server busy, please try again.")
-                    else:
-                        st.error(f"Error: {err_msg}")
+                        
+                        if user_data and "row" in user_data:
+                            try:
+                                sheet = get_user_sheet()
+                                sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
+                            except Exception:
+                                pass
+                        
+                        st.session_state["clear_clipboard_trigger"] = True
+                        success = True
+                        st.session_state["key_index"] = (st.session_state["key_index"] + attempt) % len(clients)
+                        st.rerun()
                         break
+                        
+                    except Exception as e:
+                        err_msg = str(e)
+                        if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                            if attempt < len(clients) - 1:
+                                continue
+                            else:
+                                st.error(f"⚠️ API Key Quota Limit: {err_msg}")
+                        elif "503" in err_msg or "UNAVAILABLE" in err_msg:
+                            st.error("⚠️ AI server busy, please try again.")
+                        else:
+                            st.error(f"Error: {err_msg}")
+                            break
 
 # ================= 🟢 第四步：展示结果与下载 Excel =================
 if "analysis_result" in st.session_state and st.session_state["analysis_result"]:
