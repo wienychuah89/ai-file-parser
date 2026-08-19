@@ -63,23 +63,31 @@ def get_user_sheet():
     return client.open_by_url(st.secrets["GSHEET_URL"]).sheet1
 
 def get_all_users():
-    sheet = get_user_sheet()
-    # 强制获取所有原始单元格的显示文本
-    records = sheet.get_all_records(value_render_option="FORMATTED_VALUE")
-    users_dict = {}
-    for idx, r in enumerate(records, start=2):
-        raw_u = str(r.get("username", "")).strip()
-        raw_p = str(r.get("password", "")).strip()
-        
-        # 兼容处理：自动保留去除前导零和保留前导零两种格式
-        users_dict[raw_u] = {
-            "row": idx,
-            "password": raw_p,
-            "daily_limit": int(r["daily_limit"]) if str(r.get("daily_limit", "")).isdigit() else 2,
-            "used_today": int(r["used_today"]) if str(r.get("used_today", "")).isdigit() else 0,
-            "last_date": str(r.get("last_date", "")).strip()
-        }
-    return users_dict
+    try:
+        sheet = get_user_sheet()
+        records = sheet.get_all_records(value_render_option="FORMATTED_VALUE")
+        users_dict = {}
+        for idx, r in enumerate(records, start=2):
+            raw_u = str(r.get("username", "")).strip()
+            raw_p = str(r.get("password", "")).strip()
+            
+            user_entry = {
+                "row": idx,
+                "password": raw_p,
+                "daily_limit": int(r["daily_limit"]) if str(r.get("daily_limit", "")).isdigit() else 2,
+                "used_today": int(r["used_today"]) if str(r.get("used_today", "")).isdigit() else 0,
+                "last_date": str(r.get("last_date", "")).strip()
+            }
+            users_dict[raw_u] = user_entry
+            # 兼容前导 0
+            if raw_u.startswith("0"):
+                users_dict[raw_u.lstrip("0")] = user_entry
+            else:
+                users_dict[f"0{raw_u}"] = user_entry
+        return users_dict
+    except Exception:
+        return {}
+
 # ================= 🔒 第一步：用户登录与自主注册系统 =================
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -99,16 +107,7 @@ if not st.session_state["authenticated"]:
                 clean_u = login_u.strip()
                 clean_p = login_p.strip()
                 
-                # 兼容查找：直接匹配、去 0 匹配、补 0 匹配
-                matched_user = None
-                if clean_u in users:
-                    matched_user = users[clean_u]
-                elif clean_u.lstrip("0") in users: # 用户输入 0122...，表格存 122...
-                    matched_user = users[clean_u.lstrip("0")]
-                elif f"0{clean_u}" in users:       # 用户输入 122...，表格存 0122...
-                    matched_user = users[f"0{clean_u}"]
-                
-                if matched_user and str(matched_user["password"]).strip() == clean_p:
+                if clean_u in users and str(users[clean_u]["password"]).strip() == clean_p:
                     st.session_state["authenticated"] = True
                     st.session_state["current_user"] = clean_u
                     st.success("✅ 登录成功！")
@@ -137,8 +136,8 @@ if not st.session_state["authenticated"]:
                     else:
                         sheet = get_user_sheet()
                         today_str = str(datetime.date.today())
-                        # 写入 Google Sheet: [username, password, daily_limit, used_today, last_date]
-                        sheet.append_row([clean_reg_u, clean_reg_p, 2, 0, today_str])
+                        # 强制以纯文本写入 Google Sheet
+                        sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
                         st.session_state["authenticated"] = True
                         st.session_state["current_user"] = clean_reg_u
                         st.success("🎉 注册成功！已为您自动登录。")
@@ -179,23 +178,30 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
 # ================= 📄 第三步：App 核心业务功能 =================
 st.title("📄 AI 多功能文件分析器")
 
-# 查询与展示当前用户的额度
+# 查询与展示当前用户的额度（带安全默认值）
 users = get_all_users()
 current_user = st.session_state["current_user"]
-user_data = users.get(current_user)
+user_data = users.get(current_user, None)
 
 today_str = str(datetime.date.today())
+remaining_quota = 2  # 默认兜底
+
 if user_data:
     # 隔日自动重置计数器
     if user_data["last_date"] != today_str:
-        sheet = get_user_sheet()
-        sheet.update_cell(user_data["row"], 4, 0)         # used_today = 0
-        sheet.update_cell(user_data["row"], 5, today_str) # last_date = today
-        user_data["used_today"] = 0
-        user_data["last_date"] = today_str
+        try:
+            sheet = get_user_sheet()
+            sheet.update_cell(user_data["row"], 4, 0)         # used_today = 0
+            sheet.update_cell(user_data["row"], 5, today_str) # last_date = today
+            user_data["used_today"] = 0
+            user_data["last_date"] = today_str
+        except Exception:
+            pass
 
     remaining_quota = max(0, user_data["daily_limit"] - user_data["used_today"])
     st.caption(f"👤 当前账号：`{current_user}` ｜ 今日剩余可用额度：**{remaining_quota} / {user_data['daily_limit']}** 次")
+else:
+    st.caption(f"👤 当前账号：`{current_user}` ｜ 今日剩余可用额度：**{remaining_quota}** 次")
 
 st.warning("⚠️ 手机端温馨提示：为防止手机直接拍照导致网页刷新，建议您【先用手机相机拍好文件】，再点击下方按钮前往【相册】选取上传！")
 
@@ -312,8 +318,12 @@ if ai_contents:
                         pass
                     
                     # 扣减用户额度：更新 Google Sheet
-                    sheet = get_user_sheet()
-                    sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
+                    if user_data and "row" in user_data:
+                        try:
+                            sheet = get_user_sheet()
+                            sheet.update_cell(user_data["row"], 4, user_data["used_today"] + 1)
+                        except Exception:
+                            pass
                     
                     st.session_state["clear_clipboard_trigger"] = True
                     success = True
