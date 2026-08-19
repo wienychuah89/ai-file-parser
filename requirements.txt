@@ -6,3 +6,5 @@ gTTS
 edge-tts
 gspread
 oauth2client
+pandas
+openpyxl
