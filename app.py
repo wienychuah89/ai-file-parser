@@ -234,7 +234,7 @@ def create_formatted_excel(df: pd.DataFrame) -> bytes:
 
                 # 对齐与数字格式化 (第 5 列为税额，第 6 列为总金额)
                 if col in (5, 6):
-                    cell.number_format = '¥#,##0.00;(#,##0.00);0.00'
+                    cell.number_format = "#,##0.00;(#,##0.00);0.00"
                     cell.alignment = Alignment(horizontal="right", vertical="center")
                 elif col in (1, 3, 4):
                     cell.alignment = Alignment(horizontal="center", vertical="center")
