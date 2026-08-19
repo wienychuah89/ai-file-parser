@@ -416,14 +416,20 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
             df.to_excel(writer, index=False, sheet_name="发票收据汇总")
         excel_data = excel_buffer.getvalue()
         
+        # 🌟 升级：点击时触发提示
+        def notify_download():
+            st.toast("✅ Excel 表格已成功下载！", icon="📥")
+
         st.download_button(
             label="📥 立即下载 Excel 记账汇总表 (.xlsx)",
             data=excel_data,
             file_name=f"发票报销汇总_{datetime.date.today()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
+            on_click=notify_download,
             use_container_width=True
         )
+        st.caption("💡 文件已保存至您手机/电脑的【下载 (Downloads)】文件夹中，可在浏览器菜单中随时查看。")
         st.write("")
 
     if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
