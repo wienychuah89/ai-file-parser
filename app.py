@@ -15,6 +15,10 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from st_copy_to_clipboard import st_copy_to_clipboard
 
+# 引入 openpyxl 样式库用于美化 Excel
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
 # 1. 页面基本配置
 st.set_page_config(page_title="AI 文件与发票助手", layout="centered")
 
@@ -126,31 +130,9 @@ if not st.session_state["authenticated"]:
                     st.error("❌ 用户名或密码错误！")
                     
     with tab_register:
-        st.info("💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！")
-        reg_u = st.text_input("📞 输入您的手机号或用户名：", key="reg_username")
-        reg_p = st.text_input("🔑 设置访问密码：", type="password", key="reg_password")
-        reg_p2 = st.text_input("🔑 确认访问密码：", type="password", key="reg_password2")
-        
-        if st.button("提交注册并自动登录", use_container_width=True):
-            clean_reg_u = reg_u.strip()
-            clean_reg_p = reg_p.strip()
-            if not clean_reg_u or not clean_reg_p:
-                st.warning("⚠️ 用户名和密码不能为空！")
-            elif clean_reg_p != reg_p2.strip():
-                st.warning("⚠️ 两次输入的密码不一致！")
-            else:
-                with st.spinner("正在注册中..."):
-                    users = get_all_users()
-                    if clean_reg_u in users:
-                        st.warning("⚠️ 该账号已被注册，请直接前往登录！")
-                    else:
-                        sheet = get_user_sheet()
-                        today_str = str(datetime.date.today())
-                        sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
-                        st.session_state["authenticated"] = True
-                        st.session_state["current_user"] = clean_reg_u
-                        st.success("🎉 注册成功！已为您自动登录。")
-                        st.rerun()
+        st.info("🚧 **系统升级维护中**")
+        st.warning("⚠️ 为了提供更优质的发票汇总功能，新用户注册通道暂时关闭升级。")
+        st.caption("💡 已有账号的用户可直接切换到【用户登录】正常使用。预计很快恢复注册，敬请期待！"
     st.stop()
 # =============================================================
 
@@ -183,6 +165,89 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
         return output_io.getvalue()
     except Exception:
         return image_bytes
+
+# 🌟 生成专业财务级美化 Excel 表格
+def create_formatted_excel(df: pd.DataFrame) -> bytes:
+    # 构造带有【总计行】的新表格
+    df_export = df.copy()
+    
+    # 确保金额列为数值型
+    tax_total = pd.to_numeric(df_export["税额 (SST)"], errors="coerce").fillna(0).sum()
+    amount_total = pd.to_numeric(df_export["总金额 (Total)"], errors="coerce").fillna(0).sum()
+    
+    # 追加总计行
+    total_row = {
+        "日期": "总计 (TOTAL)",
+        "商家名称": f"共 {len(df_export)} 张单据",
+        "分类": "-",
+        "单据号码": "-",
+        "税额 (SST)": tax_total,
+        "总金额 (Total)": amount_total
+    }
+    df_export = pd.concat([df_export, pd.DataFrame([total_row])], ignore_index=True)
+    
+    excel_buffer = io.BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+        df_export.to_excel(writer, index=False, sheet_name="发票收据汇总")
+        worksheet = writer.sheets["发票收据汇总"]
+        
+        # 样式定义
+        header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid") # 商务深蓝
+        header_font = Font(name="微软雅黑", size=11, bold=True, color="FFFFFF")
+        total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")  # 淡蓝汇总高亮
+        total_font = Font(name="微软雅黑", size=11, bold=True, color="000000")
+        regular_font = Font(name="微软雅黑", size=10)
+        
+        thin_border = Border(
+            left=Side(style='thin', color='D3D3D3'),
+            right=Side(style='thin', color='D3D3D3'),
+            top=Side(style='thin', color='D3D3D3'),
+            bottom=Side(style='thin', color='D3D3D3')
+        )
+        double_bottom_border = Border(
+            left=Side(style='thin', color='D3D3D3'),
+            right=Side(style='thin', color='D3D3D3'),
+            top=Side(style='thin', color='000000'),
+            bottom=Side(style='double', color='000000') # 财务标准双底线
+        )
+
+        max_row = worksheet.max_row
+        max_col = worksheet.max_column
+
+        # 格式化表头 (Row 1)
+        for col in range(1, max_col + 1):
+            cell = worksheet.cell(row=1, column=col)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        # 格式化数据行与总计行
+        for row in range(2, max_row + 1):
+            is_total_row = (row == max_row)
+            for col in range(1, max_col + 1):
+                cell = worksheet.cell(row=row, column=col)
+                cell.font = total_font if is_total_row else regular_font
+                cell.border = double_bottom_border if is_total_row else thin_border
+                
+                if is_total_row:
+                    cell.fill = total_fill
+
+                # 对齐与数字格式化 (第 5 列为税额，第 6 列为总金额)
+                if col in (5, 6):
+                    cell.number_format = '¥#,##0.00;(#,##0.00);0.00'
+                    cell.alignment = Alignment(horizontal="right", vertical="center")
+                elif col in (1, 3, 4):
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+                else:
+                    cell.alignment = Alignment(horizontal="left", vertical="center")
+
+        # 自动调整列宽
+        for col in worksheet.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            worksheet.column_dimensions[col_letter].width = max(max_len + 5, 14)
+
+    return excel_buffer.getvalue()
 
 # ================= 📄 第三步：App 核心业务功能 =================
 st.title("📄 AI 多功能文件与发票助手")
@@ -325,7 +390,6 @@ if ai_contents:
                             json_data = json.loads(json_match.group(1).strip())
                             if isinstance(json_data, list) and len(json_data) > 0:
                                 df = pd.DataFrame(json_data)
-                                # 重命名为中文友好表头
                                 rename_map = {
                                     "date": "日期",
                                     "merchant": "商家名称",
@@ -335,13 +399,16 @@ if ai_contents:
                                     "total_amount": "总金额 (Total)"
                                 }
                                 df = df.rename(columns=rename_map)
+                                
+                                # 强制转换数值格式，防止字符串相加报错
+                                df["税额 (SST)"] = pd.to_numeric(df["税额 (SST)"], errors="coerce").fillna(0.0)
+                                df["总金额 (Total)"] = pd.to_numeric(df["总金额 (Total)"], errors="coerce").fillna(0.0)
                                 st.session_state["invoice_df"] = df
                         except Exception:
                             pass
                     
                     # 语音生成
                     try:
-                        # 朗读前去掉 json 代码块，避免把代码也念出来
                         clean_voice_text = re.sub(r"```json[\s\S]*?```", "", raw_text)
                         clean_voice_text = clean_voice_text.replace("*", "").replace("#", "").replace("`", "").strip()
                         
@@ -404,21 +471,22 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.divider()
     st.subheader("📊 AI 分析与提取结果")
     
-    # 🌟 核心亮点：如果识别出发票表格，展示并提供 Excel 下载
+    # 🌟 核心亮点：如果识别出发票表格，展示并提供带美化样式的 Excel 下载
     if st.session_state.get("invoice_df") is not None:
         df = st.session_state["invoice_df"]
         st.success("🎉 已为您自动提取发票结构化明细表：")
-        st.dataframe(df, use_container_width=True)
         
-        # 转换为标准 Excel 二进制流
-        excel_buffer = io.BytesIO()
-        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name="发票收据汇总")
-        excel_data = excel_buffer.getvalue()
+        # 页面端表格展示：格式化为两位小数
+        df_preview = df.copy()
+        df_preview["税额 (SST)"] = df_preview["税额 (SST)"].map("{:,.2f}".format)
+        df_preview["总金额 (Total)"] = df_preview["总金额 (Total)"].map("{:,.2f}".format)
+        st.dataframe(df_preview, use_container_width=True)
         
-        # 🌟 升级：点击时触发提示
-        def notify_download():
-            st.toast("✅ Excel 表格已成功下载！", icon="📥")
+        # 生成带边框、表头颜色、自适应列宽和自动求和的 Excel
+        excel_data = create_formatted_excel(df)
+        
+        def notify_excel_download():
+            st.toast("✅ Excel 报表已成功下载！", icon="📥")
 
         st.download_button(
             label="📥 立即下载 Excel 记账汇总表 (.xlsx)",
@@ -426,10 +494,10 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
             file_name=f"发票报销汇总_{datetime.date.today()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             type="primary",
-            on_click=notify_download,
+            on_click=notify_excel_download,
             use_container_width=True
         )
-        st.caption("💡 文件已保存至您手机/电脑的【下载 (Downloads)】文件夹中，可在浏览器菜单中随时查看。")
+        st.caption("💡 文件已保存至您手机/电脑的【下载 (Downloads)】文件夹中。")
         st.write("")
 
     if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
@@ -437,7 +505,7 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
         st.write("")
     
-    # 显示纯文本部分（隐藏末尾生硬的 json 块，提供给用户最优雅的排版）
+    # 显示纯文本部分（隐藏 json 代码块）
     display_text = re.sub(r"```json[\s\S]*?```", "", st.session_state["analysis_result"]).strip()
     st.markdown(display_text)
     
@@ -478,11 +546,16 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     elif share_type == "🎵 发送语音报告 (MP3)":
         if "audio_bytes" in st.session_state and st.session_state["audio_bytes"]:
             st.write("💾 **步骤二**：点击下方下载语音文件：")
+            
+            def notify_voice_download():
+                st.toast("✅ 语音文件已下载至 Downloads 文件夹！", icon="🎵")
+
             st.download_button(
                 label="⬇️ 下载语音文件 (voice_report.mp3)",
                 data=st.session_state["audio_bytes"],
                 file_name="voice_report.mp3",
                 mime="audio/mp3",
+                on_click=notify_voice_download,
                 use_container_width=True
             )
             st.caption("💡 提示：下载后打开 WhatsApp，在聊天框点击 📎 附件选择该 MP3 发送即可。")
