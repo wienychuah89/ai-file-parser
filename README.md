@@ -51,7 +51,7 @@ A powerful, mobile-friendly **AI Document Analysis & Receipt-to-Excel Web App** 
 ## 🚀 Live Demo / 在线体验
 
 Try the live application here:  
-👉 **[Launch AI Assistant on Streamlit Community Cloud](https://share.streamlit.io)** *(https://ai-file-parser-zs7bww3nlt4gbbjxwqz2rv.streamlit.app/)*
+👉 **[Launch AI Assistant on Streamlit Community Cloud](https://share.streamlit.io)** *(https://nexgen-ai-studio.streamlit.app/)*
 
 ---
 
