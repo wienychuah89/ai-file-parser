@@ -15,7 +15,6 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from st_copy_to_clipboard import st_copy_to_clipboard
 
-# 引入 openpyxl 样式库用于美化 Excel
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
@@ -166,16 +165,22 @@ def compress_image(image_bytes: bytes, max_dimension: int = 1600, quality: int =
     except Exception:
         return image_bytes
 
-# 🌟 生成专业财务级美化 Excel 表格
+# 🌟 生成包含明细与分类汇总双 Sheet 的财务级 Excel
 def create_formatted_excel(df: pd.DataFrame) -> bytes:
-    # 构造带有【总计行】的新表格
     df_export = df.copy()
     
-    # 确保金额列为数值型
-    tax_total = pd.to_numeric(df_export["税额 (SST)"], errors="coerce").fillna(0).sum()
-    amount_total = pd.to_numeric(df_export["总金额 (Total)"], errors="coerce").fillna(0).sum()
+    # 确保数值格式安全
+    df_export["税额 (SST)"] = pd.to_numeric(df_export["税额 (SST)"], errors="coerce").fillna(0.0)
+    df_export["总金额 (Total)"] = pd.to_numeric(df_export["总金额 (Total)"], errors="coerce").fillna(0.0)
     
-    # 追加总计行
+    tax_total = df_export["税额 (SST)"].sum()
+    amount_total = df_export["总金额 (Total)"].sum()
+    
+    # 生成分类汇总表
+    category_summary = df_export.groupby("分类")["总金额 (Total)"].sum().reset_index()
+    category_summary.columns = ["消费类别", "分类汇总金额 (RM)"]
+    
+    # 明细表追加总计行
     total_row = {
         "日期": "总计 (TOTAL)",
         "商家名称": f"共 {len(df_export)} 张单据",
@@ -184,17 +189,17 @@ def create_formatted_excel(df: pd.DataFrame) -> bytes:
         "税额 (SST)": tax_total,
         "总金额 (Total)": amount_total
     }
-    df_export = pd.concat([df_export, pd.DataFrame([total_row])], ignore_index=True)
+    df_detail = pd.concat([df_export, pd.DataFrame([total_row])], ignore_index=True)
     
     excel_buffer = io.BytesIO()
     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-        df_export.to_excel(writer, index=False, sheet_name="发票收据汇总")
-        worksheet = writer.sheets["发票收据汇总"]
+        df_detail.to_excel(writer, index=False, sheet_name="发票收据明细")
+        category_summary.to_excel(writer, index=False, sheet_name="分类统计汇总")
         
         # 样式定义
-        header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid") # 商务深蓝
+        header_fill = PatternFill(start_color="1F4E78", end_color="1F4E78", fill_type="solid")
         header_font = Font(name="微软雅黑", size=11, bold=True, color="FFFFFF")
-        total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")  # 淡蓝汇总高亮
+        total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
         total_font = Font(name="微软雅黑", size=11, bold=True, color="000000")
         regular_font = Font(name="微软雅黑", size=10)
         
@@ -208,44 +213,62 @@ def create_formatted_excel(df: pd.DataFrame) -> bytes:
             left=Side(style='thin', color='D3D3D3'),
             right=Side(style='thin', color='D3D3D3'),
             top=Side(style='thin', color='000000'),
-            bottom=Side(style='double', color='000000') # 财务标准双底线
+            bottom=Side(style='double', color='000000')
         )
 
-        max_row = worksheet.max_row
-        max_col = worksheet.max_column
-
-        # 格式化表头 (Row 1)
-        for col in range(1, max_col + 1):
-            cell = worksheet.cell(row=1, column=col)
+        # 格式化 Sheet 1：发票收据明细
+        ws1 = writer.sheets["发票收据明细"]
+        for col in range(1, ws1.max_column + 1):
+            cell = ws1.cell(row=1, column=col)
             cell.fill = header_fill
             cell.font = header_font
             cell.alignment = Alignment(horizontal="center", vertical="center")
 
-        # 格式化数据行与总计行
-        for row in range(2, max_row + 1):
-            is_total_row = (row == max_row)
-            for col in range(1, max_col + 1):
-                cell = worksheet.cell(row=row, column=col)
-                cell.font = total_font if is_total_row else regular_font
-                cell.border = double_bottom_border if is_total_row else thin_border
-                
-                if is_total_row:
+        for row in range(2, ws1.max_row + 1):
+            is_total = (row == ws1.max_row)
+            for col in range(1, ws1.max_column + 1):
+                cell = ws1.cell(row=row, column=col)
+                cell.font = total_font if is_total else regular_font
+                cell.border = double_bottom_border if is_total else thin_border
+                if is_total:
                     cell.fill = total_fill
 
-                # 对齐与数字格式化 (第 5 列为税额，第 6 列为总金额)
                 if col in (5, 6):
-                    cell.number_format = "#,##0.00;(#,##0.00);0.00"
+                    cell.number_format = '#,##0.00;(#,##0.00);0.00'
                     cell.alignment = Alignment(horizontal="right", vertical="center")
                 elif col in (1, 3, 4):
                     cell.alignment = Alignment(horizontal="center", vertical="center")
                 else:
                     cell.alignment = Alignment(horizontal="left", vertical="center")
 
-        # 自动调整列宽
-        for col in worksheet.columns:
+        for col in ws1.columns:
             max_len = max(len(str(cell.value or '')) for cell in col)
             col_letter = get_column_letter(col[0].column)
-            worksheet.column_dimensions[col_letter].width = max(max_len + 5, 14)
+            ws1.column_dimensions[col_letter].width = max(max_len + 8, 16)
+
+        # 格式化 Sheet 2：分类统计汇总
+        ws2 = writer.sheets["分类统计汇总"]
+        for col in range(1, ws2.max_column + 1):
+            cell = ws2.cell(row=1, column=col)
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        for row in range(2, ws2.max_row + 1):
+            for col in range(1, ws2.max_column + 1):
+                cell = ws2.cell(row=row, column=col)
+                cell.font = regular_font
+                cell.border = thin_border
+                if col == 2:
+                    cell.number_format = '#,##0.00;(#,##0.00);0.00'
+                    cell.alignment = Alignment(horizontal="right", vertical="center")
+                else:
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        for col in ws2.columns:
+            max_len = max(len(str(cell.value or '')) for cell in col)
+            col_letter = get_column_letter(col[0].column)
+            ws2.column_dimensions[col_letter].width = max(max_len + 8, 20)
 
     return excel_buffer.getvalue()
 
@@ -399,8 +422,6 @@ if ai_contents:
                                     "total_amount": "总金额 (Total)"
                                 }
                                 df = df.rename(columns=rename_map)
-                                
-                                # 强制转换数值格式，防止字符串相加报错
                                 df["税额 (SST)"] = pd.to_numeric(df["税额 (SST)"], errors="coerce").fillna(0.0)
                                 df["总金额 (Total)"] = pd.to_numeric(df["总金额 (Total)"], errors="coerce").fillna(0.0)
                                 st.session_state["invoice_df"] = df
@@ -426,7 +447,7 @@ if ai_contents:
                     except Exception:
                         pass
                     
-                    # 扣减用户额度：更新 Google Sheet
+                    # 扣减用户额度
                     if user_data and "row" in user_data:
                         try:
                             sheet = get_user_sheet()
@@ -471,19 +492,39 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.divider()
     st.subheader("📊 AI 分析与提取结果")
     
-    # 🌟 核心亮点：如果识别出发票表格，展示并提供带美化样式的 Excel 下载
+    # 🌟 核心亮点：可直接编辑的表格 + 分类汇总看板 + 导出 Excel
     if st.session_state.get("invoice_df") is not None:
         df = st.session_state["invoice_df"]
-        st.success("🎉 已为您自动提取发票结构化明细表：")
         
-        # 页面端表格展示：格式化为两位小数
-        df_preview = df.copy()
-        df_preview["税额 (SST)"] = df_preview["税额 (SST)"].map("{:,.2f}".format)
-        df_preview["总金额 (Total)"] = df_preview["总金额 (Total)"].map("{:,.2f}".format)
-        st.dataframe(df_preview, use_container_width=True)
+        st.info("💡 **提示**：您可以直接**双击下方表格中的任何单元格**修改金额、店名或分类，下载的 Excel 将自动以您修改后的最新数据为准！")
         
-        # 生成带边框、表头颜色、自适应列宽和自动求和的 Excel
-        excel_data = create_formatted_excel(df)
+        # 允许用户在线自由编辑
+        edited_df = st.data_editor(
+            df,
+            use_container_width=True,
+            num_rows="dynamic",
+            column_config={
+                "税额 (SST)": st.column_config.NumberColumn(format="RM %.2f"),
+                "总金额 (Total)": st.column_config.NumberColumn(format="RM %.2f"),
+            },
+            key="invoice_editor"
+        )
+        
+        # 实时计算用户编辑后的分类汇总
+        edited_df["总金额 (Total)"] = pd.to_numeric(edited_df["总金额 (Total)"], errors="coerce").fillna(0.0)
+        edited_df["税额 (SST)"] = pd.to_numeric(edited_df["税额 (SST)"], errors="coerce").fillna(0.0)
+        
+        cat_group = edited_df.groupby("分类")["总金额 (Total)"].sum().reset_index()
+        
+        # 页面展示轻量化分类看板
+        st.write("📈 **分类开销汇总看板**：")
+        cols = st.columns(len(cat_group) if len(cat_group) > 0 else 1)
+        for idx, row_cat in cat_group.iterrows():
+            with cols[idx % len(cols)]:
+                st.metric(label=f"🏷️ {row_cat['分类']}", value=f"RM {row_cat['总金额 (Total)']:.2f}")
+
+        # 基于用户修改后的最新数据生成 Excel
+        excel_data = create_formatted_excel(edited_df)
         
         def notify_excel_download():
             st.toast("✅ Excel 报表已成功下载！", icon="📥")
@@ -505,7 +546,6 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
         st.audio(st.session_state["audio_bytes"], format="audio/mp3")
         st.write("")
     
-    # 显示纯文本部分（隐藏 json 代码块）
     display_text = re.sub(r"```json[\s\S]*?```", "", st.session_state["analysis_result"]).strip()
     st.markdown(display_text)
     
