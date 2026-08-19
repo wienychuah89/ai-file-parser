@@ -115,34 +115,38 @@ if not st.session_state["authenticated"]:
                 else:
                     st.error("❌ 用户名或密码错误！")
                     
-    with tab_register:
-        st.info("💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！")
-        reg_u = st.text_input("📞 输入您的手机号（作为账号）：", key="reg_username")
-        reg_p = st.text_input("🔑 设置访问密码：", type="password", key="reg_password")
-        reg_p2 = st.text_input("🔑 确认访问密码：", type="password", key="reg_password2")
+    #with tab_register:
+        #st.info("💡 注册即可获得【每天 2 次免费 AI 深度分析】额度！")
+        #reg_u = st.text_input("📞 输入您的手机号（作为账号）：", key="reg_username")
+        #reg_p = st.text_input("🔑 设置访问密码：", type="password", key="reg_password")
+        #reg_p2 = st.text_input("🔑 确认访问密码：", type="password", key="reg_password2")
         
-        if st.button("提交注册并自动登录", use_container_width=True):
-            clean_reg_u = reg_u.strip()
-            clean_reg_p = reg_p.strip()
-            if not clean_reg_u or not clean_reg_p:
-                st.warning("⚠️ 手机号和密码不能为空！")
-            elif clean_reg_p != reg_p2.strip():
-                st.warning("⚠️ 两次输入的密码不一致！")
-            else:
-                with st.spinner("正在注册中..."):
-                    users = get_all_users()
-                    if clean_reg_u in users:
-                        st.warning("⚠️ 该账号已被注册，请直接前往登录！")
-                    else:
-                        sheet = get_user_sheet()
-                        today_str = str(datetime.date.today())
-                        # 强制以纯文本写入 Google Sheet
-                        sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
-                        st.session_state["authenticated"] = True
-                        st.session_state["current_user"] = clean_reg_u
-                        st.success("🎉 注册成功！已为您自动登录。")
-                        st.rerun()
-    st.stop()
+        #if st.button("提交注册并自动登录", use_container_width=True):
+            #clean_reg_u = reg_u.strip()
+            #clean_reg_p = reg_p.strip()
+            #if not clean_reg_u or not clean_reg_p:
+                #st.warning("⚠️ 手机号和密码不能为空！")
+            #elif clean_reg_p != reg_p2.strip():
+                #st.warning("⚠️ 两次输入的密码不一致！")
+            #else:
+                #with st.spinner("正在注册中..."):
+                    #users = get_all_users()
+                    #if clean_reg_u in users:
+                        #st.warning("⚠️ 该账号已被注册，请直接前往登录！")
+                    #else:
+                        #sheet = get_user_sheet()
+                        #today_str = str(datetime.date.today())
+                        ## 强制以纯文本写入 Google Sheet
+                        #sheet.append_row([f"'{clean_reg_u}", f"'{clean_reg_p}", 2, 0, today_str])
+                        #st.session_state["authenticated"] = True
+                        #st.session_state["current_user"] = clean_reg_u
+                        #st.success("🎉 注册成功！已为您自动登录。")
+                        #st.rerun()
+    #st.stop()
+    with tab_register:
+        st.info("🚧 **系统升级维护中**")
+        st.warning("⚠️ 为了提供更优质的发票汇总功能，新用户注册通道暂时关闭升级。")
+        st.caption("💡 已有账号的用户可直接切换到【用户登录】正常使用。预计很快恢复注册，敬请期待！")
 # =============================================================
 
 # ================= 🔑 第二步：智能 API Key 初始化 =================
