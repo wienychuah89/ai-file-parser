@@ -59,5 +59,5 @@ Try the live application here:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/your-username/ai-file-parser.git](https://github.com/wienychuah89/ai-file-parser.git)
+   git clone [https://github.com/wienychuah89/ai-file-parser.git](https://github.com/wienychuah89/ai-file-parser.git)
    cd ai-file-parser
