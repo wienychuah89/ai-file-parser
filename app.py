@@ -533,7 +533,7 @@ def create_formatted_excel(df: pd.DataFrame, t_dict: dict) -> bytes:
 
 # ================= 📄 第三步：App 核心业务功能 =================
 #st.title(T["app_title"])
-st.markdown(f"### {T['app_title']}")
+st.markdown(f'<h1 style="font-size: 18px;">{T["app_title"]}</h1>', unsafe_allow_html=True)
 
 users = get_all_users()
 current_user = st.session_state["current_user"]
