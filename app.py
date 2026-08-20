@@ -532,7 +532,8 @@ def create_formatted_excel(df: pd.DataFrame, t_dict: dict) -> bytes:
     return excel_buffer.getvalue()
 
 # ================= 📄 第三步：App 核心业务功能 =================
-st.title(T["app_title"])
+#st.title(T["app_title"])
+st.markdown(f"### {T['app_title']}")
 
 users = get_all_users()
 current_user = st.session_state["current_user"]
