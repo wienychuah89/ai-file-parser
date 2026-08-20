@@ -336,7 +336,8 @@ if "authenticated" not in st.session_state:
     st.session_state["current_user"] = None
 
 if not st.session_state["authenticated"]:
-    st.title(T["login_title"])
+    #st.title(T["login_title"])
+    st.markdown(f'<h1 style="font-size: 18px;">{T["login_title"]}</h1>', unsafe_allow_html=True)
     
     tab_login, tab_register = st.tabs([T["tab_login"], T["tab_register"]])
     
