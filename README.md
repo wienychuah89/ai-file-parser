@@ -8,7 +8,7 @@
 
 A powerful, mobile-friendly **AI Document Analysis & Receipt-to-Excel Web App** tailored for Southeast Asia (Malaysia). Built with **Streamlit**, **Google Gemini**, and **openpyxl**.
 
-一款专为马来西亚及东南亚用户量身打造的**移动端自适应 AI 文件与商业发票智能助手**。支持批量发票提取、自动求和分类导出 Excel、肾移植复诊化验单智能解读、多语种语音播报及 WhatsApp 一键分享。
+一款专为马来西亚及东南亚用户量身打造的**移动端自适应 AI 文件与商业发票智能助手**。支持批量发票提取、自动求和分类导出 Excel、健康检测报告智能解读、多语种语音播报及 WhatsApp 一键分享。
 
 ---
 
