@@ -22,9 +22,8 @@ A powerful, mobile-friendly **AI Document Analysis & Receipt-to-Excel Web App** 
   - **Sheet 1 (Details)**: Formatted table with dark blue headers, light grey borders, and automatic `TOTAL` sum with financial double-underline.
   - **Sheet 2 (Category Summary)**: Aggregates total expenditure per category automatically.
 
-### 🏥 2. Kidney Transplant & Health Follow-up Analysis (复诊化验单智能关怀)
-- Extracts key kidney function biomarkers (`Creatinine`, `Urea`, `Hemoglobin`, etc.) into structured Markdown tables with reference ranges.
-- Assesses stability against user's custom baseline and provides dietary/hydration advice.
+### 🏥 2. Health Lab Report (健康检测报告)
+- Provide personalized, practical dietary advice and daily health monitoring reminders based on my current results.
 
 ### 🌐 3. Multilingual Support & Neural Voice Audio (三语界面与语音播报)
 - Full UI and Prompt localization for **🇨🇳 中文 / 🇬🇧 English / 🇲🇾 Bahasa Melayu**.
