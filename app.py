@@ -56,7 +56,7 @@ LANG_DICT = {
         "file_page": "📷 文件第 {} 页: {}",
         "file_type_label": "🔮 请选择文件类型：",
         "mode_receipt": "🧾 车辆/商业发票收据 (支持批量导出Excel)",
-        "mode_medical": "🏥 肾移植复诊报告",
+        "mode_medical": "🏥 健康检测报告",
         "mode_contract": "📄 商业合同与通用文件",
         "mode_custom": "✍️ 自由输入/其他全新文件",
         "prompt_label": "💬 您想对 AI 提问什么？（可直接修改或补充）",
@@ -131,7 +131,7 @@ LANG_DICT = {
         "file_page": "📷 File Page {}: {}",
         "file_type_label": "🔮 Select Document Type:",
         "mode_receipt": "🧾 Receipts & Invoices (Batch Excel Export)",
-        "mode_medical": "🏥 Kidney Transplant Follow-up Lab Report",
+        "mode_medical": "🏥 Health Lab Report",
         "mode_contract": "📄 Business Contract & General Document",
         "mode_custom": "✍️ Custom Input / Other Documents",
         "prompt_label": "💬 What would you like to ask AI? (Editable)",
@@ -206,7 +206,7 @@ LANG_DICT = {
         "file_page": "📷 Fail Halaman {}: {}",
         "file_type_label": "🔮 Pilih Jenis Dokumen:",
         "mode_receipt": "🧾 Resit & Invois (Eksport Excel Berkelompok)",
-        "mode_medical": "🏥 Laporan Pemeriksaan Pemindahan Buah Pinggang",
+        "mode_medical": "🏥 Laporan Kesihatan",
         "mode_contract": "📄 Kontrak Perniagaan & Dokumen Am",
         "mode_custom": "✍️ Input Bebas / Dokumen Lain",
         "prompt_label": "💬 Apa soalan anda untuk AI? (Boleh diubah)",
@@ -600,9 +600,9 @@ if ai_contents:
         if file_mode == T["mode_medical"]:
             default_prompt = (
                 f"{lang_instruction}\n"
-                "Kidney Transplant Lab Report Analysis:\n"
-                "1. Extract key values: Creatinine, Urea, Hemoglobin (Hb) in a Markdown table with reference ranges.\n"
-                "2. Evaluate stability against historical baseline and give health/dietary reminders."
+                "Health Lab Report:\n"
+                "Please analyze the documents and reply strictly in 【English】:\n"
+                "1. Provide personalized, practical dietary advice and daily health monitoring reminders based on my current results.\n"
             )
         elif file_mode == T["mode_receipt"]:
             default_prompt = (
@@ -637,9 +637,9 @@ if ai_contents:
         if file_mode == T["mode_medical"]:
             default_prompt = (
                 f"{lang_instruction}\n"
-                "Analisis Laporan Makmal Pemindahan Buah Pinggang:\n"
-                "1. Ekstrak nilai utama: Kreatinin (Creatinine), Urea, Hemoglobin (Hb) dalam jadual Markdown beserta nilai rujukan.\n"
-                "2. Nilaikan kestabilan bacaan dan berikan panduan penjagaan pemakanan & kesihatan."
+                "Laporan Kesihatan:\n"
+                "Sila analisis dokumen-dokumen tersebut dan berikan maklum balas secara eksklusif dalam 【Bahasa Melayu】:\n"
+                "1. Berikan nasihat pemakanan yang praktikal dan diperibadikan, serta peringatan pemantauan kesihatan harian berdasarkan keputusan semasa saya.\n"
             )
         elif file_mode == T["mode_receipt"]:
             default_prompt = (
@@ -677,6 +677,12 @@ if ai_contents:
                 "化验单关键信息提取任务：\n"
                 "1. 提取肌酐（Creatinine）、尿素（Urea）、血红蛋白（Hb）核心数值，用Markdown表格列出并附参考值。\n"
                 "2. 评估当前指标状态与健康注意事项。"
+            )
+            default_prompt = (
+                f"{lang_instruction}\n"
+                "健康检测报告:\n"
+                "请分析这些文件，并严格使用【中文】回复。:\n"
+                "1. 根據我目前的檢查結果，提供個人化、實用的飲食建議及日常健康監測提醒。\n"
             )
         elif file_mode == T["mode_receipt"]:
             default_prompt = (
