@@ -18,15 +18,18 @@ from st_copy_to_clipboard import st_copy_to_clipboard
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-st.set_page_config(
-    page_title="NexGen AI Studio",
-    initial_sidebar_state="collapsed"  # 1. 先临时改成 collapsed 刷新缓存
-)
+st.set_page_config(page_title="NexGen AI Studio")
 
-with st.sidebar:
-    st.title("🤖 NexGen Studio")
-    with st.expander("点击展开/收起应用介绍", expanded=True):
-        st.write("What app can do?")
+st.title("🤖 NexGen AI Studio 主控制台")
+
+# 在主界面顶部直接放一个精美的手风琴弹窗，不用依赖多变的侧边栏
+with st.popover("👋 第一次来？点击查看 NexGen 应用介绍", use_container_width=True):
+    st.subheader("What app can do?")
+    st.write("1. 自动化智能文本分析\n2. 核心架构快速部署")
+    st.image(
+        "https://placehold.co", 
+        caption="NexGen 核心架构图"
+    )
 
     
 # 1. 页面基本配置
