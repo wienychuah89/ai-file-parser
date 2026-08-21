@@ -31,9 +31,7 @@ with st.sidebar:
         st.write("What app can do?")
         st.image("https://placehold.co", caption="NexGen 核心架构图")
     
-    # 介绍下面可以放你正式的菜单功能，完全不冲突
-    st.divider()
-    st.selectbox("选择功能", ["文本生成", "图像处理", "模型微调"])
+
     
 # 1. 页面基本配置
 st.set_page_config(page_title="AI File & Receipt Assistant", layout="centered")
