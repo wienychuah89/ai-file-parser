@@ -29,7 +29,7 @@ with st.sidebar:
     # 用 expander 组件把介绍包起来，默认是展开的 (expanded=True)
     with st.expander("👋 点击展开/收起应用介绍", expanded=True):
         st.write("What app can do?")
-        st.image("https://placehold.co", caption="NexGen 核心架构图")
+        #st.image("https://placehold.co", caption="NexGen 核心架构图")
     
 
     
