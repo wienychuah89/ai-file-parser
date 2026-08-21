@@ -18,6 +18,14 @@ from st_copy_to_clipboard import st_copy_to_clipboard
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
+st.set_page_config(
+    page_title="App Intro",
+    initial_sidebar_state="expanded"  # Forces the menu open
+)
+with st.sidebar:
+    st.title("👋 Welcome to NexGen!")
+    st.write("What app can do?")
+    
 # 1. 页面基本配置
 st.set_page_config(page_title="AI File & Receipt Assistant", layout="centered")
 
