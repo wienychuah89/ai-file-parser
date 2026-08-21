@@ -18,22 +18,15 @@ from st_copy_to_clipboard import st_copy_to_clipboard
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
-# 1. 必须是第一行 Streamlit 命令
 st.set_page_config(
     page_title="NexGen AI Studio",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # 1. 先临时改成 collapsed 刷新缓存
 )
 
-# 2. 侧边栏内容
 with st.sidebar:
     st.title("🤖 NexGen Studio")
-    
-    # 用 expander 组件把介绍包起来，默认是展开的
-    with st.expander("👋 点击展开/收起应用介绍", expanded=True):
+    with st.expander("点击展开/收起应用介绍", expanded=True):
         st.write("What app can do?")
-        
-        # 修复：加上了具体的尺寸和文字参数
-        #st.image("https://placehold.co", caption="NexGen 核心架构图")
 
     
 # 1. 页面基本配置
