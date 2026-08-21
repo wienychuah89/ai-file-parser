@@ -33,9 +33,7 @@ with st.sidebar:
         st.write("What app can do?")
         
         # 修复：加上了具体的尺寸和文字参数
-        st.image(
-            "https://placehold.co", 
-            caption="NexGen 核心架构图"
+        #st.image("https://placehold.co", caption="NexGen 核心架构图")
 
     
 # 1. 页面基本配置
