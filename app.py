@@ -20,28 +20,20 @@ from openpyxl.utils import get_column_letter
 
 st.set_page_config(
     page_title="NexGen AI Studio",
-    initial_sidebar_state="expanded" # 首次进入依然默认展开
+    initial_sidebar_state="expanded"
 )
-# 2. 编写侧边栏逻辑
+
 with st.sidebar:
-    if st.session_state.show_intro:
-        st.title("👋 Welcome to NexGen!")
+    st.title("🤖 NexGen Studio")
+    
+    # 用 expander 组件把介绍包起来，默认是展开的 (expanded=True)
+    with st.expander("👋 点击展开/收起应用介绍", expanded=True):
         st.write("What app can do?")
-        
-        # 这里放你的介绍图片
-        st.image("https://placehold.co", caption="NexGen Studio 功能演示")
-        
-        # 用户看完后点击这个按钮切换状态
-        if st.button("进入系统 / 隐藏介绍"):
-            st.session_state.show_intro = False
-            st.rerun() # 立即刷新页面，切换到正式菜单
-            
-    else:
-        # 当用户点击了隐藏后，侧边栏会变成正式的工作菜单
-        st.title("🛠️ NexGen 控制台")
-        if st.button("🔄 重新看一次介绍"):
-            st.session_state.show_intro = True
-            st.rerun()
+        st.image("https://placehold.co", caption="NexGen 核心架构图")
+    
+    # 介绍下面可以放你正式的菜单功能，完全不冲突
+    st.divider()
+    st.selectbox("选择功能", ["文本生成", "图像处理", "模型微调"])
     
 # 1. 页面基本配置
 st.set_page_config(page_title="AI File & Receipt Assistant", layout="centered")
