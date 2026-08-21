@@ -20,8 +20,6 @@ from openpyxl.utils import get_column_letter
 
 st.set_page_config(page_title="NexGen AI Studio")
 
-st.title("🤖 NexGen AI Studio 主控制台")
-
 # 1. 精美的弹出介绍气泡
 with st.popover("👋 第一次来？点击查看 NexGen 应用介绍", use_container_width=True):
     st.markdown("### What app can do?")
