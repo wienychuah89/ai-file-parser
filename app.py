@@ -19,20 +19,6 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 st.set_page_config(page_title="NexGen AI Studio")
-
-# 1. 精美的弹出介绍气泡
-with st.popover("👋 第一次来？点击查看 NexGen 应用介绍", use_container_width=True):
-    st.markdown("### What app can do?")
-    st.write("🤖 自动化智能文本分析")
-    st.write("🤖 核心架构快速部署")
-    
-    # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
-    st.image(
-        "https://unsplash.com", 
-        caption="NexGen 智能核心架构示意图"
-    )
-
-
     
 # 1. 页面基本配置
 st.set_page_config(page_title="AI File & Receipt Assistant", layout="centered")
@@ -308,6 +294,19 @@ selected_lang = st.selectbox(
     index=0
 )
 T = LANG_DICT[selected_lang]
+
+
+# 1. 精美的弹出介绍气泡
+with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
+    st.markdown("### What app can do?")
+    st.write("🤖 自动化智能文本分析")
+    st.write("🤖 核心架构快速部署")
+    
+    # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
+    st.image(
+        "https://unsplash.com", 
+        caption="NexGen 智能核心架构示意图"
+    )
 
 # ================= 📊 Google Sheets 数据库连接层 =================
 @st.cache_resource
