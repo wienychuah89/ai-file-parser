@@ -22,14 +22,18 @@ st.set_page_config(page_title="NexGen AI Studio")
 
 st.title("🤖 NexGen AI Studio 主控制台")
 
-# 在主界面顶部直接放一个精美的手风琴弹窗，不用依赖多变的侧边栏
+# 1. 精美的弹出介绍气泡
 with st.popover("👋 第一次来？点击查看 NexGen 应用介绍", use_container_width=True):
-    st.subheader("What app can do?")
-    st.write("1. 自动化智能文本分析\n2. 核心架构快速部署")
+    st.markdown("### What app can do?")
+    st.write("🤖 自动化智能文本分析")
+    st.write("🤖 核心架构快速部署")
+    
+    # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
     st.image(
-        "https://placehold.co", 
-        caption="NexGen 核心架构图"
+        "https://unsplash.com", 
+        caption="NexGen 智能核心架构示意图"
     )
+
 
     
 # 1. 页面基本配置
