@@ -297,17 +297,40 @@ T = LANG_DICT[selected_lang]
 
 
 # 1. 精美的弹出介绍气泡
-with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
-    st.markdown("### What app can do?")
-    st.write("🤖 自动化智能文本分析")
-    st.write("🤖 核心架构快速部署")
+if "English" in selected_lang:
+    with st.popover("👋Click to view the NexGen app introduction.", use_container_width=True):
+        st.markdown("### What NexGen can do?")
+        st.write("🤖 Automated Intelligent Text Analysis")
+        st.write("🤖 Rapid deployment of core architecture")
+        
+        # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
+        st.image(
+            "https://unsplash.com", 
+            caption="NexGen 智能核心架构示意图"
+        )
+elif "Melayu" in selected_lang:
+    with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
+        st.markdown("### Apakah NexGen boleh buat?")
+        st.write("🤖 Analisis Teks Pintar Secara Automatik")
+        st.write("🤖 Pengerahan pantas seni bina teras")
+        
+        # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
+        st.image(
+            "https://unsplash.com", 
+            caption="NexGen 智能核心架构示意图"
+        )
+else:
+    with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
+        st.markdown("### NexGen可以做什么?")
+        st.write("🤖 自动化智能文本分析")
+        st.write("🤖 核心架构快速部署")
+        
+        # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
+        st.image(
+            "https://unsplash.com", 
+            caption="NexGen 智能核心架构示意图"
+        )
     
-    # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
-    st.image(
-        "https://unsplash.com", 
-        caption="NexGen 智能核心架构示意图"
-    )
-
 # ================= 📊 Google Sheets 数据库连接层 =================
 @st.cache_resource
 def get_gspread_client():
