@@ -316,7 +316,7 @@ if "English" in selected_lang:
         st.write("🤖 Supports direct sending via WhatsApp")
 
     #第二部分
-    col_img, col_txt = st.columns([1, 7])
+        col_img, col_txt = st.columns([1, 7])
         # 👈 左边列：放图片
         with col_img:
             st.image(
