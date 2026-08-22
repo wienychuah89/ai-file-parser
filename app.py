@@ -978,7 +978,8 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
         st.session_state["clear_clipboard_trigger"] = False
 
     st.divider()
-    st.subheader(T["res_header"])
+    #st.subheader(T["res_header"])
+    st.markdown(f'<h1 style="font-size: 18px;">{T["res_header"]}</h1>', unsafe_allow_html=True)
     
     if st.session_state.get("invoice_raw_df") is not None:
         df = st.session_state["invoice_raw_df"]
@@ -1039,7 +1040,9 @@ if "analysis_result" in st.session_state and st.session_state["analysis_result"]
     st.markdown(display_text)
     
     st.divider()
-    st.subheader(T["share_header"])
+    #st.subheader(T["share_header"])
+    st.markdown(f'<h1 style="font-size: 18px;">{T["share_header"]}</h1>', unsafe_allow_html=True)
+
     
     share_type = st.radio(
         T["share_radio_lbl"],
