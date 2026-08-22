@@ -299,20 +299,26 @@ T = LANG_DICT[selected_lang]
 # 1. 精美的弹出介绍气泡
 if "English" in selected_lang:
     with st.popover("👋Click to view the NexGen app introduction.", use_container_width=True):
-        st.markdown("### What NexGen can do?")
+        col_img, col_txt = st.columns([1, 2])
+        
+        # 👈 左边列：放图片
+        with col_img:
+            st.image(
+                "logo01.png", 
+                caption="NexGen AI Studio",
+                width:80;
+            )
+            
+        # 👉 右边列：放你想展示的文字和标题
+        with col_txt:
+            st.markdown("### What NexGen can do?")
+ 
         st.write("🤖 Multilingual Support")
         st.write("🤖 Automated Intelligent Text Analysis")
         st.write("🤖 Display format for text, files, and voice results")
         st.write("🤖 Supports direct sending via WhatsApp")
         
-        # 💡 居中技巧：创建 3 列，比例为 1:2:1，把图片放在中间那一列
-        left_co, cent_co, right_co = st.columns([1, 2, 1])
-        with cent_co:
-            st.image(
-                "logo01.png", 
-                caption="NexGen AI Studio",
-                width=100  # 同时限制宽度
-            )
+  
 elif "Melayu" in selected_lang:
     with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
         st.markdown("### Apakah NexGen boleh buat?")
