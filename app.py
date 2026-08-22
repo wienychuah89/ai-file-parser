@@ -309,9 +309,9 @@ if "English" in selected_lang:
         left_co, cent_co, right_co = st.columns([1, 2, 1])
         with cent_co:
             st.image(
-                "logo.png", 
-                caption="NexGen 核心架构图",
-                width=250  # 同时限制宽度
+                "logo01.png", 
+                caption="NexGen AI Studio",
+                width=100  # 同时限制宽度
             )
 elif "Melayu" in selected_lang:
     with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
@@ -325,9 +325,9 @@ elif "Melayu" in selected_lang:
         left_co, cent_co, right_co = st.columns([1, 2, 1])
         with cent_co:
             st.image(
-                "logo.png", 
-                caption="NexGen 核心架构图",
-                width=250  # 同时限制宽度
+                "logo01.png", 
+                caption="NexGen AI Studio",
+                width=100  # 同时限制宽度
             )
 else:
     with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
@@ -341,9 +341,9 @@ else:
         left_co, cent_co, right_co = st.columns([1, 2, 1])
         with cent_co:
             st.image(
-                "logo.png", 
-                caption="NexGen 核心架构图",
-                width=250  # 同时限制宽度
+                "logo01.png", 
+                caption="NexGen AI Studio",
+                width=100  # 同时限制宽度
             )
     
 # ================= 📊 Google Sheets 数据库连接层 =================
