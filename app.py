@@ -306,7 +306,7 @@ if "English" in selected_lang:
             st.image(
                 "logo01.png", 
                 caption="NexGen AI Studio",
-                width=80;
+                width=80
             )
             
         # 👉 右边列：放你想展示的文字和标题
