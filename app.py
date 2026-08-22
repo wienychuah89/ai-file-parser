@@ -305,11 +305,9 @@ if "English" in selected_lang:
         st.write("🤖 Display format for text, files, and voice results")
         st.write("🤖 Supports direct sending via WhatsApp")
         
-        
-        # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
         st.image(
-            "https://unsplash.com", 
-            caption="NexGen 智能核心架构示意图"
+            "logo.png", 
+            caption="NexGen AI Studio"
         )
 elif "Melayu" in selected_lang:
     with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
@@ -318,11 +316,10 @@ elif "Melayu" in selected_lang:
         st.write("🤖 Analisis teks pintar secara automatik")
         st.write("🤖 Format paparan untuk hasil teks, dokumen dan pertuturan")
         st.write("🤖 Sokongan untuk penghantaran terus melalui WhatsApp")
-        
-        # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
+
         st.image(
-            "https://unsplash.com", 
-            caption="NexGen 智能核心架构示意图"
+            "logo.png", 
+            caption="NexGen AI Studio"
         )
 else:
     with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
@@ -332,10 +329,9 @@ else:
         st.write("🤖 文字、文件及語音結果的顯示格式")
         st.write("🤖 支援透過 WhatsApp 直接發送")
         
-        # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
         st.image(
-            "https://unsplash.com", 
-            caption="NexGen 智能核心架构示意图"
+            "logo.png", 
+            caption="NexGen AI Studio"
         )
     
 # ================= 📊 Google Sheets 数据库连接层 =================
