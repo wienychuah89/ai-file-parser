@@ -368,7 +368,7 @@ elif "Melayu" in selected_lang:
             )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
-            st.markdown("### Application steps : ")
+            st.markdown("### Langkah penggunaan : ")
  
         st.write("1. Daftar and log masuk")
         st.write("2. Pilih/muat naik foto (berbilang foto disokong) atau fail PDF.")
@@ -409,7 +409,7 @@ else:
             )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
-            st.markdown("### Application steps : ")
+            st.markdown("### 使用步驟 : ")
  
         st.write("1. 注册与登入")
         st.write("2. 选择/上传照片（支持多张）或PDF文件")
