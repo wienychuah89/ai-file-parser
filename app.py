@@ -328,7 +328,7 @@ if "English" in selected_lang:
             st.markdown("### Application steps : ")
  
         st.write("👉 1. Register and login")
-        st.write("👉 2. Select/Snap photo(s))
+        st.write("👉 2. Select/Snap photo(s)")
         st.write("👉 3. Select Document Type: ")
         st.write("   🧾 Receipts & Invoices (Batch Excel Export)")
         st.write("   🏥 Health Lab Report")
