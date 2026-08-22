@@ -358,6 +358,14 @@ elif "Melayu" in selected_lang:
         st.write("🤖 Format paparan untuk hasil teks, dokumen dan pertuturan")
         st.write("🤖 Sokongan untuk penghantaran terus melalui WhatsApp")
 
+        st.divider()
+        col_img, col_txt = st.columns([1, 7])
+        # 👈 左边列：放图片
+        with col_img:
+            st.image(
+                "logo01.png", 
+                width=40
+            )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
             st.markdown("### Application steps : ")
@@ -391,6 +399,14 @@ else:
         st.write("🤖 文字、文件及語音結果的顯示格式")
         st.write("🤖 支援透過 WhatsApp 直接發送")    
 
+        st.divider()
+        col_img, col_txt = st.columns([1, 7])
+        # 👈 左边列：放图片
+        with col_img:
+            st.image(
+                "logo01.png", 
+                width=40
+            )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
             st.markdown("### Application steps : ")
