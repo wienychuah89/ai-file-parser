@@ -317,23 +317,23 @@ if "English" in selected_lang:
 
     #第二部分
     col_img, col_txt = st.columns([1, 7])
-            # 👈 左边列：放图片
-            with col_img:
-                st.image(
-                    "logo01.png", 
-                    width=50
-                )
-            # 👉 右边列：放你想展示的文字和标题
-            with col_txt:
-                st.markdown("### Application steps : ")
-     
-            st.write("👉 1. Register and login")
-            st.write("👉 2. Select/Snap photo(s))
-            st.write("👉 3. Select Document Type: ")
-            st.write("   🧾 Receipts & Invoices (Batch Excel Export)")
-            st.write("   🏥 Health Lab Report")
-            st.write("   📄 Business Contract & General Document")
-            st.write("   ✍️ Custom Input / Other Documents")
+        # 👈 左边列：放图片
+        with col_img:
+            st.image(
+                "logo01.png", 
+                width=50
+            )
+        # 👉 右边列：放你想展示的文字和标题
+        with col_txt:
+            st.markdown("### Application steps : ")
+ 
+        st.write("👉 1. Register and login")
+        st.write("👉 2. Select/Snap photo(s))
+        st.write("👉 3. Select Document Type: ")
+        st.write("   🧾 Receipts & Invoices (Batch Excel Export)")
+        st.write("   🏥 Health Lab Report")
+        st.write("   📄 Business Contract & General Document")
+        st.write("   ✍️ Custom Input / Other Documents")
 
 
 
