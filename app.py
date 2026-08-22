@@ -304,7 +304,7 @@ if "English" in selected_lang:
         with col_img:
             st.image(
                 "logo01.png", 
-                width=50
+                width=40
             )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
@@ -322,24 +322,24 @@ if "English" in selected_lang:
         with col_img:
             st.image(
                 "logo01.png", 
-                width=50
+                width=40
             )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
             st.markdown("### Application steps : ")
  
         st.write("1. Register and login")
-        st.write("2. Select/Snap photo(s)")
+        st.write("2. Select/Snap photo(s) or PDF file")
         st.write("3. Select Document Type: ")
         st.write("🧾 Receipts & Invoices (Batch Excel Export)")
         st.write("🏥 Health Lab Report")
         st.write("📄 Business Contract & General Document")
         st.write("✍️ Custom Input / Other Documents")
-
-
-
-
-               
+        st.write("4. You may edit/direct proceed prompt that you like to ask AI")
+        st.write("5. Click for button analysis and wait for few second...")
+        st.write("6. Result will display in voice/text/editable excel format")
+        st.write("7. Voice or excel can be download")
+        st.write("8. Proceed direct sending text/voice/excel thru Whatsapp")
 
 elif "Melayu" in selected_lang:
     with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
@@ -348,7 +348,7 @@ elif "Melayu" in selected_lang:
         with col_img:
             st.image(
                 "logo01.png", 
-                width=50
+                width=40
             )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
@@ -357,6 +357,23 @@ elif "Melayu" in selected_lang:
         st.write("🤖 Analisis teks pintar secara automatik")
         st.write("🤖 Format paparan untuk hasil teks, dokumen dan pertuturan")
         st.write("🤖 Sokongan untuk penghantaran terus melalui WhatsApp")
+
+        # 👉 右边列：放你想展示的文字和标题
+        with col_txt:
+            st.markdown("### Application steps : ")
+ 
+        st.write("1. Daftar and log masuk")
+        st.write("2. Pilih/muat naik foto (berbilang foto disokong) atau fail PDF.")
+        st.write("3. Pilih Jenis Dokumen: ")
+        st.write("🧾 Resit & Invois (Eksport Excel Berkelompok)")
+        st.write("🏥 Laporan Kesihatan")
+        st.write("📄 Kontrak Perniagaan & Dokumen Am")
+        st.write("✍️ Input Bebas / Dokumen Lain")
+        st.write("4. Anda boleh ubahsuai/teruskan pertanyaan kepada AI")
+        st.write("5. Click butang analisis dan tunggu beberapa saat...")
+        st.write("6. Keputusan akan dipaparkan dengan jenis audio/teks/excel yang boleh diubahsuai")
+        st.write("7. Audio/excel boleh dimuat turun")
+        st.write("8. Boleh menghantar mesej teks/audio/excel melalui Whatsapp")
 else:
     with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
         col_img, col_txt = st.columns([1, 7])
@@ -364,7 +381,7 @@ else:
         with col_img:
             st.image(
                 "logo01.png", 
-                width=50
+                width=40
             )
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
@@ -373,6 +390,23 @@ else:
         st.write("🤖 自动化智能文本分析")
         st.write("🤖 文字、文件及語音結果的顯示格式")
         st.write("🤖 支援透過 WhatsApp 直接發送")    
+
+        # 👉 右边列：放你想展示的文字和标题
+        with col_txt:
+            st.markdown("### Application steps : ")
+ 
+        st.write("1. 注册与登入")
+        st.write("2. 选择/上传照片（支持多张）或PDF文件")
+        st.write("3. 选择文件类型: ")
+        st.write("🧾 车辆/商业发票收据 (支持批量导出Excel)")
+        st.write("🏥 健康检测报告")
+        st.write("📄 商业合同与通用文件")
+        st.write("✍️ 自由输入/其他全新文件")
+        st.write("4. 您可以更改/直接继续您要问AI的问题")
+        st.write("5. 点击分析按钮后等待数秒...")
+        st.write("6. 结果会以音频/文字/可更改的excel方式呈现")
+        st.write("7. 音频/excel文件可下载")
+        st.write("8. 可以通过Whatsapp直接发送文字/音频/excel")
 # ================= 📊 Google Sheets 数据库连接层 =================
 @st.cache_resource
 def get_gspread_client():
