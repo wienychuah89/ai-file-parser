@@ -378,8 +378,8 @@ elif "Melayu" in selected_lang:
         st.write("📄 Kontrak Perniagaan & Dokumen Am")
         st.write("✍️ Input Bebas / Dokumen Lain")
         st.write("4. Anda boleh ubahsuai/teruskan pertanyaan kepada AI")
-        st.write("5. Click butang analisis dan tunggu beberapa saat...")
-        st.write("6. Keputusan akan dipaparkan dengan jenis audio/teks/excel yang boleh diubahsuai")
+        st.write("5. Tekan butang analisis dan tunggu beberapa saat...")
+        st.write("6. Keputusan akan dipaparkan dalam jenis audio/teks/excel yang boleh diubahsuai")
         st.write("7. Audio/excel boleh dimuat turun")
         st.write("8. Boleh menghantar mesej teks/audio/excel melalui Whatsapp")
 else:
