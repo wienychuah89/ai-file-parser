@@ -300,8 +300,11 @@ T = LANG_DICT[selected_lang]
 if "English" in selected_lang:
     with st.popover("👋Click to view the NexGen app introduction.", use_container_width=True):
         st.markdown("### What NexGen can do?")
+        st.write("🤖 Multilingual Support")
         st.write("🤖 Automated Intelligent Text Analysis")
-        st.write("🤖 Rapid deployment of core architecture")
+        st.write("🤖 Display format for text, files, and voice results")
+        st.write("🤖 Supports direct sending via WhatsApp")
+        
         
         # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
         st.image(
@@ -311,8 +314,10 @@ if "English" in selected_lang:
 elif "Melayu" in selected_lang:
     with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
         st.markdown("### Apakah NexGen boleh buat?")
-        st.write("🤖 Analisis Teks Pintar Secara Automatik")
-        st.write("🤖 Pengerahan pantas seni bina teras")
+        st.write("🤖 Sokongan berbilang bahasa")
+        st.write("🤖 Analisis teks pintar secara automatik")
+        st.write("🤖 Format paparan untuk hasil teks, dokumen dan pertuturan")
+        st.write("🤖 Sokongan untuk penghantaran terus melalui WhatsApp")
         
         # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
         st.image(
@@ -322,8 +327,10 @@ elif "Melayu" in selected_lang:
 else:
     with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
         st.markdown("### NexGen可以做什么?")
+        st.write("🤖 多語言支援")
         st.write("🤖 自动化智能文本分析")
-        st.write("🤖 核心架构快速部署")
+        st.write("🤖 文字、文件及語音結果的顯示格式")
+        st.write("🤖 支援透過 WhatsApp 直接發送")
         
         # 修复图片：使用 Streamlit 官方自带的绝对安全的网络图片链接
         st.image(
