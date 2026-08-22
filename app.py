@@ -300,14 +300,12 @@ T = LANG_DICT[selected_lang]
 if "English" in selected_lang:
     with st.popover("👋Click to view the NexGen app introduction.", use_container_width=True):
         col_img, col_txt = st.columns([1, 7])
-        
         # 👈 左边列：放图片
         with col_img:
             st.image(
                 "logo01.png", 
                 width=50
             )
-            
         # 👉 右边列：放你想展示的文字和标题
         with col_txt:
             st.markdown("### What NexGen can do?")
@@ -316,41 +314,38 @@ if "English" in selected_lang:
         st.write("🤖 Automated Intelligent Text Analysis")
         st.write("🤖 Display format for text, files, and voice results")
         st.write("🤖 Supports direct sending via WhatsApp")
-        
-  
 elif "Melayu" in selected_lang:
     with st.popover("👋Klik untuk melihat pengenalan aplikasi NexGen.", use_container_width=True):
-        st.markdown("### Apakah NexGen boleh buat?")
+        col_img, col_txt = st.columns([1, 7])
+        # 👈 左边列：放图片
+        with col_img:
+            st.image(
+                "logo01.png", 
+                width=50
+            )
+        # 👉 右边列：放你想展示的文字和标题
+        with col_txt:
+            st.markdown("### Apakah NexGen boleh buat?")
         st.write("🤖 Sokongan berbilang bahasa")
         st.write("🤖 Analisis teks pintar secara automatik")
         st.write("🤖 Format paparan untuk hasil teks, dokumen dan pertuturan")
         st.write("🤖 Sokongan untuk penghantaran terus melalui WhatsApp")
-
-         # 💡 居中技巧：创建 3 列，比例为 1:2:1，把图片放在中间那一列
-        left_co, cent_co, right_co = st.columns([1, 2, 1])
-        with cent_co:
-            st.image(
-                "logo01.png", 
-                caption="NexGen AI Studio",
-                width=100  # 同时限制宽度
-            )
 else:
     with st.popover("👋点击查看 NexGen 应用介绍", use_container_width=True):
-        st.markdown("### NexGen可以做什么?")
+        col_img, col_txt = st.columns([1, 7])
+        # 👈 左边列：放图片
+        with col_img:
+            st.image(
+                "logo01.png", 
+                width=50
+            )
+        # 👉 右边列：放你想展示的文字和标题
+        with col_txt:
+            st.markdown("### NexGen可以做什么?")
         st.write("🤖 多語言支援")
         st.write("🤖 自动化智能文本分析")
         st.write("🤖 文字、文件及語音結果的顯示格式")
-        st.write("🤖 支援透過 WhatsApp 直接發送")
-        
-         # 💡 居中技巧：创建 3 列，比例为 1:2:1，把图片放在中间那一列
-        left_co, cent_co, right_co = st.columns([1, 2, 1])
-        with cent_co:
-            st.image(
-                "logo01.png", 
-                caption="NexGen AI Studio",
-                width=100  # 同时限制宽度
-            )
-    
+        st.write("🤖 支援透過 WhatsApp 直接發送")    
 # ================= 📊 Google Sheets 数据库连接层 =================
 @st.cache_resource
 def get_gspread_client():
