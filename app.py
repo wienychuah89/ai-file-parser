@@ -299,14 +299,13 @@ T = LANG_DICT[selected_lang]
 # 1. 精美的弹出介绍气泡
 if "English" in selected_lang:
     with st.popover("👋Click to view the NexGen app introduction.", use_container_width=True):
-        col_img, col_txt = st.columns([1, 2])
+        col_img, col_txt = st.columns([1, 5])
         
         # 👈 左边列：放图片
         with col_img:
             st.image(
                 "logo01.png", 
-                caption="NexGen AI Studio",
-                width=80
+                width=60
             )
             
         # 👉 右边列：放你想展示的文字和标题
